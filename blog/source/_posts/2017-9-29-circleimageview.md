@@ -52,7 +52,7 @@ Xfermode生成的图片比BitmapShaper生成的图片要小，我测试的过程
 
 ## CircleImageView
 
-{% codeblock CircleImageView.java lang:xml %}
+{% codeblock CircleImageView.java lang:java %}
 public class CircleImageView extends ImageView {
     private static final String TAG = "CircleImageView";
 
