@@ -87,13 +87,13 @@ JDK5之后的集合框架进行了一些根本性修改，这些修改显著的�
 
 ## 集合框架通用实现表
 
-|Interfaces|Hash table Implementations|Resizable array Implementations|Tree Implementations|Linked list Implementations|Hash table + Linked list Implementations|
+| Interfaces | Hash table Implementations | Resizable array Implementations | Tree Implementations | Linked list Implementations|Hash table + Linked list Implementations |
 | :---: | :---: | :---: | :---: | :---: | :---: |
-|Set|HashSet||TreeSet||LinkedHashSet|
-|List||[ArrayList](http://thinkdevos.net/blog/20160918/java-collections-framework-arraylist/)||LinkedList||
-|Queue||||||
-|Deque||ArrayDeque||LinkedList||
-|Map|HashMap||TreeMap||LinkedHashMap|
+| Set | HashSet | | TreeSet | | LinkedHashSet |
+| List | | [ArrayList](http://thinkdevos.net/blog/20160918/java-collections-framework-arraylist/) | | LinkedList | |
+| Queue | | | | | |
+| Deque | | ArrayDeque | | LinkedList | |
+| Map | HashMap | | TreeMap | | LinkedHashMap |
 
 **后记:** ***一直再用java集合框架，但对于该框架的设计思想一直不清楚，也看过框架中类的源码，却因为理解不透彻陷入在重复的学习过程，于是决定从官方最基础的文档中去理解和感悟集合框架中的核心内容，加深记忆，减少重复学习的工作,后续将继续分析集合框架中的核心类库.***
 
