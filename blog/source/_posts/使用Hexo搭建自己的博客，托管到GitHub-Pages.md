@@ -161,3 +161,4 @@ tags:
 参考文档  
 [添加评论、浏览次数、打赏、RSS等功能参考](http://www.jianshu.com/p/5973c05d7100)
 [统计分析的地址参考](http://col.dog/2015/11/12/hello-world/)
+[Hexo Next下添加版权声明模块](https://arcecho.github.io/2017/04/08/Hexo-Next%E4%B8%8B%E6%B7%BB%E5%8A%A0%E7%89%88%E6%9D%83%E5%A3%B0%E6%98%8E%E6%A8%A1%E5%9D%97/)
