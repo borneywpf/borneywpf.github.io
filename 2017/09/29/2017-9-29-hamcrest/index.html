@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.2" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="java,单元测试,hamcrest," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.2" />
+
+
+
+
+
+
+<meta name="description" content="概述：最近研究如何在android中做单元测试，那就从基础的Junit开始吧；在Junit4中常用的断言都非常简单容易理解，但是到了assertThat时，我茫然了，这是个神马东西，于是参考了Junit Wiki才知道了有一个Hamcrest，于是就有了本文的产生，本文大部分翻译于官方教程，但在自定义匹配器的过程中，无">
+<meta name="keywords" content="java,单元测试,hamcrest">
+<meta property="og:type" content="article">
+<meta property="og:title" content="java单元测试之Hamcrest">
+<meta property="og:url" content="http://thinkdevos.net/2017/09/29/2017-9-29-hamcrest/index.html">
+<meta property="og:site_name" content="Borney的博客">
+<meta property="og:description" content="概述：最近研究如何在android中做单元测试，那就从基础的Junit开始吧；在Junit4中常用的断言都非常简单容易理解，但是到了assertThat时，我茫然了，这是个神马东西，于是参考了Junit Wiki才知道了有一个Hamcrest，于是就有了本文的产生，本文大部分翻译于官方教程，但在自定义匹配器的过程中，无法自己调试通过，就自己研究了一个过程；本文中所有代码都调试通过了，可以自己去我f">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://thinkdevos.net/2017/09/29/2017-9-29-hamcrest/hamcrest-sugar-jar.png">
+<meta property="og:image" content="http://thinkdevos.net/2017/09/29/2017-9-29-hamcrest/hamcrest-sugar-args.png">
+<meta property="og:image" content="http://thinkdevos.net/2017/09/29/2017-9-29-hamcrest/hamcrest-sugar-generator.png">
+<meta property="og:image" content="http://thinkdevos.net/2017/09/29/2017-9-29-hamcrest/hamcrest-sugar-testrun.png">
+<meta property="og:updated_time" content="2017-12-05T02:02:20.848Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="java单元测试之Hamcrest">
+<meta name="twitter:description" content="概述：最近研究如何在android中做单元测试，那就从基础的Junit开始吧；在Junit4中常用的断言都非常简单容易理解，但是到了assertThat时，我茫然了，这是个神马东西，于是参考了Junit Wiki才知道了有一个Hamcrest，于是就有了本文的产生，本文大部分翻译于官方教程，但在自定义匹配器的过程中，无法自己调试通过，就自己研究了一个过程；本文中所有代码都调试通过了，可以自己去我f">
+<meta name="twitter:image" content="http://thinkdevos.net/2017/09/29/2017-9-29-hamcrest/hamcrest-sugar-jar.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.2',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://thinkdevos.net/2017/09/29/2017-9-29-hamcrest/"/>
+
+
+
+
+
+  <title>java单元测试之Hamcrest | Borney的博客</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Borney的博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://thinkdevos.net/2017/09/29/2017-9-29-hamcrest/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Borney">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Borney的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">java单元测试之Hamcrest</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-09-29T11:06:19+08:00">
+                2017-09-29
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/java/" itemprop="url" rel="index">
+                    <span itemprop="name">java</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+             <span id="/2017/09/29/2017-9-29-hamcrest/" class="leancloud_visitors" data-flag-title="java单元测试之Hamcrest">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+      
+      
+
+      
+        <p>概述：<br>最近研究如何在android中做单元测试，那就从基础的Junit开始吧；在Junit4中常用的断言都非常简单容易理解，但是到了assertThat时，我茫然了，这是个神马东西，于是参考了<a href="https://github.com/junit-team/junit4/wiki" target="_blank" rel="noopener">Junit Wiki</a>才知道了有一个Hamcrest，于是就有了本文的产生，本文大部分翻译于官方教程，但在自定义匹配器的过程中，无法自己调试通过，就自己研究了一个过程；本文中所有代码都调试通过了，可以自己去我fork的Junit4的源码branch <a href="https://github.com/borneywpf/junit4/tree/junit-read" target="_blank" rel="noopener">junit-read</a>的demo目录下查看</p>
+<h1 id="Hamcrest-教程"><a href="#Hamcrest-教程" class="headerlink" title="Hamcrest 教程"></a>Hamcrest 教程</h1><p><a href="https://code.google.com/archive/p/hamcrest/wikis/Tutorial.wiki" target="_blank" rel="noopener">原文连接</a><br><a href="https://code.google.com/archive/p/hamcrest/downloads" target="_blank" rel="noopener">官方demo地址</a></p>
+<h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><p>Hamcrest 是一个用于编写匹配对象的框架，允许以声明方式定义“匹配规则”。多数情况下，匹配器是不可用的，如UI验证，数据过滤，但是在编写灵活测试领域中，匹配器是最常用的。本教程将向你介绍如何使用Hamcrest进行单元测试。</p>
+<p>当写测试时，有时很难在过度指定测试之间获得平衡（并使其易于改变），并没有指定足够的（使测试更有价值，即使测试的东西被中断，它任然能继续传递）。有一个工具使得你能够精确的选择测试的方面并描述它应该具有的价值，精确的掌控。极大的帮助编写“恰到好处”的测试，当测试方面的行为偏离预期的行为时，这样的测试失败，但是当对行为进行次要的，无关紧要的改变时测试通过继续。</p>
+<h2 id="第一个Hamcrest测试"><a href="#第一个Hamcrest测试" class="headerlink" title="第一个Hamcrest测试"></a>第一个Hamcrest测试</h2><p>我们将从写一个简单的Junit3测试开始，但是不适用Junit的assertEquals方法，我们使用Hamcrest的assertThat结构和标准的匹配器，我们静态导入：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> <span class="keyword">static</span> org.hamcrest.MatcherAssert.assertThat;  </span><br><span class="line"><span class="keyword">import</span> <span class="keyword">static</span> org.hamcrest.Matchers.*;  </span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> junit.framework.TestCase;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">BiscuitTest</span> <span class="keyword">extends</span> <span class="title">TestCase</span> </span>&#123; </span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">testEquals</span><span class="params">()</span> </span>&#123;</span><br><span class="line">      Biscuit theBiscuit = <span class="keyword">new</span> Biscuit(<span class="string">"Ginger"</span>);</span><br><span class="line">      Biscuit myBiscuit = <span class="keyword">new</span> Biscuit(<span class="string">"Ginger"</span>);</span><br><span class="line">      assertThat(theBiscuit, equalTo(myBiscuit));</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><em>assertThat</em> 是用于进行断言测试的程式化句子。在例子中，断言的主题是作为第一个方法参数对象 <em>Biscuit</em> 。第二个参数是 <em>Biscuit</em> 对象的匹配器，这个匹配器使用 <em>Object equals</em> 法规法检查一个对象等于另一个对象。因为 <em>Biscuit</em> 重写了equals方法，测试通过。</p>
+<p>如果测试中有多个断言，可以在断言中包含被测试值的标识符：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">testIdentifier</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    Biscuit theBiscuit = <span class="keyword">new</span> Biscuit(<span class="string">"Ginger"</span>);</span><br><span class="line">    assertThat(<span class="string">"chocolate chips"</span>, theBiscuit.getChocolateChipCount(), equalTo(<span class="number">10</span>));</span><br><span class="line">    assertThat(<span class="string">"hazelnuts"</span>, theBiscuit.getHazelnutCount(), equalTo(<span class="number">3</span>));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="其他测试框架"><a href="#其他测试框架" class="headerlink" title="其他测试框架"></a>其他测试框架</h2><p>Hamcrest从一开始设计就可以和其他不同的测试框架结合，例如，hamcrest可以和Junit3，Junit4和TestNG一起使用（有关详细信息，可以查看完整的Hamcrest发行版附带的示例）。这是很容易迁移使用hamcrest样式断言到现有的测试套件中，因为其他断言样式可以和Hamcrest并存。</p>
+<p>Hamcrest可以和模拟对象框架一起使用，通过适配器框架从模拟器对象框架的匹配器概念桥接到Hamcrest框架，JMock1使用Hamcrest匹配器被限制.Hamcrest提供了一个JMock1适配器，允许在JMock1测试中使用Hamcrest匹配器。JMock2不需要这样的适配器层，因为它被设计成使用Hamcrest作为其匹配库。Hamcrest还为EasyMock2提供了适配器，有关更多详细信息，请参阅Hamcrest示例。</p>
+<h2 id="通用匹配器的浏览"><a href="#通用匹配器的浏览" class="headerlink" title="通用匹配器的浏览"></a>通用匹配器的浏览</h2><p>Hamcrest自带一个有用的匹配库，这里是一些最重要的</p>
+<ul>
+<li><p>核心<br><strong><em>anyting</em></strong> - 总是匹配，如果你不关心被测试的对象是否有用<br><strong><em>describedAs</em></strong> - 装饰器添加自定义失败描述<br><strong><em>is</em></strong> - 装饰器用以提高可读性，见下面的”Sugar”</p>
+</li>
+<li><p>逻辑<br><strong><em>allOf</em></strong> - 如果所有匹配器匹配则匹配，短路（如java中的&amp;&amp;)<br><strong><em>anyOf</em></strong> - 如果任何匹配器匹配则匹配，短路（如java中的||)<br><strong><em>not</em></strong> - 如果匹配器不匹配则匹配，反之亦然</p>
+</li>
+<li><p>对象<br><strong><em>equalTo</em></strong> - 使用Object.equals测试对象相等<br><strong><em>hasToString</em></strong> - 测试Object.toString<br><strong><em>instanceOf，isCompatibleType</em></strong> - 测试类型<br><strong><em>notNullValue，nullValue</em></strong> - null测试<br><strong><em>sameInstance</em></strong> - 测试对象标示</p>
+</li>
+<li><p>Bean<br><strong><em>hasProperty</em></strong> - 测试JavaBeans属性</p>
+</li>
+<li><p>集合<br><strong><em>array</em></strong> - 针对数组的匹配器，测试数组元素<br><strong><em>hasEntry, hasKey, hasValue</em></strong> - 测试Map的entry,key,value<br><strong><em>hasItem, hasItems</em></strong> - 测试一个集合包含的元素<br><strong><em>hasItemInArray</em></strong> - 测试一个数组中包含的一个元素</p>
+</li>
+<li><p>Number<br><strong><em>closeTo</em></strong> - 测试浮点值接近给定值<br><strong><em>greaterThan, greaterThanOrEqualTo, lessThan, lessThanOrEqualTo</em></strong> - 测试大小排序</p>
+</li>
+<li><p>文本<br><strong><em>equalToIgnoringCase</em></strong> - 测试字符串忽略大小写等式<br><strong><em>equalToIgnoringWhiteSpace</em></strong> - 测试字符串等式忽略大小写和空白符<br><strong><em>containsString, endsWith, startsWith</em></strong> - 测试字符串匹配</p>
+</li>
+</ul>
+<h2 id="Sugar"><a href="#Sugar" class="headerlink" title="Sugar"></a>Sugar</h2><p>Hamcrest努力使得你的测试尽可能的可读，例如 <strong><em>is</em></strong>是一个匹配器的包装器不向基础匹配器添加任何额外的行为。如下断言都是等效的</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">testSugar</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    Biscuit theBiscuit = <span class="keyword">new</span> Biscuit(<span class="string">"Ginger"</span>);</span><br><span class="line">    Biscuit myBiscuit = <span class="keyword">new</span> Biscuit(<span class="string">"Ginger"</span>);</span><br><span class="line">    assertThat(theBiscuit, equalTo(myBiscuit));</span><br><span class="line">    assertThat(theBiscuit, is(equalTo(myBiscuit)));</span><br><span class="line">    assertThat(theBiscuit, is(myBiscuit));</span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
+<p>最后一个形式是被允许的，因为is(T value)被重载返回is(equalTo(value)).</p>
+<h2 id="编写自定义匹配器"><a href="#编写自定义匹配器" class="headerlink" title="编写自定义匹配器"></a>编写自定义匹配器</h2><p>Hamcrest捆绑了很多有用的匹配器，但是你可能会发现，你需要不断创建自己的匹配器，以适应自己的测试需求。这通常发生在你发现一个代码片段，一次又一次测试相同的属性（和做不同的测试），并且你希望将碎片捆绑在一个断言中。通过编写自己的匹配器，你将消除代码的重复，使你的测试更可读。<br>让我们编写自己的匹配器来测试double值是否具有值NaN(不是数字)，这是我们要写的测试</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">testSquareRootOfMinusOneIsNotANumber</span><span class="params">()</span> </span>&#123;   </span><br><span class="line">  assertThat(Math.sqrt(-<span class="number">1</span>), is(notANumber())); </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里是实现</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> org.hamcrest.examples.tutorial;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.hamcrest.Description; </span><br><span class="line"><span class="keyword">import</span> org.hamcrest.Factory; </span><br><span class="line"><span class="keyword">import</span> org.hamcrest.Matcher; </span><br><span class="line"><span class="keyword">import</span> org.hamcrest.TypeSafeMatcher;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">IsNotANumber</span> <span class="keyword">extends</span> <span class="title">TypeSafeMatcher</span>&lt;<span class="title">Double</span>&gt; </span>&#123;</span><br><span class="line">  <span class="meta">@Override</span> <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">matchesSafely</span><span class="params">(Double number)</span> </span>&#123; </span><br><span class="line">    <span class="keyword">return</span> number.isNaN(); </span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">describeTo</span><span class="params">(Description description)</span> </span>&#123;     </span><br><span class="line">    description.appendText(<span class="string">"not a number"</span>); </span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="meta">@Factory</span> <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Matcher <span class="title">notANumber</span><span class="params">()</span> </span>&#123; </span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> IsNotANumber(); </span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong><em>assertThat</em></strong> 方法是一个通用的方法，接收一个由断言的主题类型化的匹配器参数。我们断言关于Double的值，所以我们知道我们需要一个Matcher<double>,对于我们的Matcher的实现，最方便的是子类化TypeSafeMatcher,其可以类型转化成Double给我们，我们只需要实现matchesSafely方法，它只是检查Double是否是NaN,实现describeTo方法，它提供测试失败时的描述信息，下面是一个失败信息的例子</double></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">assertThat(<span class="number">1.0</span>, is(notANumber()));</span><br><span class="line"><span class="comment">//失败消息</span></span><br><span class="line"><span class="comment">//java.lang.AssertionError: Expected: is not a number got : &lt;1.0&gt;</span></span><br></pre></td></tr></table></figure>
+<p>在我们匹配器中的第三个方法是一个方便的工厂方法。我们静态导入这个方法在我们的匹配器测试中：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> <span class="keyword">static</span> org.hamcrest.MatcherAssert.assertThat; </span><br><span class="line"><span class="keyword">import</span> <span class="keyword">static</span> org.hamcrest.Matchers.*;</span><br><span class="line"><span class="keyword">import</span> <span class="keyword">static</span> org.hamcrest.examples.tutorial.IsNotANumber.notANumber;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> junit.framework.TestCase;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">NumberTest</span> <span class="keyword">extends</span> <span class="title">TestCase</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">testSquareRootOfMinusOneIsNotANumber</span><span class="params">()</span> </span>&#123; </span><br><span class="line">    assertThat(Math.sqrt(-<span class="number">1</span>), is(notANumber())); </span><br><span class="line">  &#125; </span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
+<p>尽管notANumber方法在每次被调用时创建一个新的匹配器，你不应该假定这是你的匹配器唯一的使用模式。因此你应该确保你的匹配器是无状态的，如此，单个实例可以在匹配器之间重用。</p>
+<h2 id="Sugar-生成"><a href="#Sugar-生成" class="headerlink" title="Sugar 生成"></a>Sugar 生成</h2><p>如果你生成了多个自定义的匹配器，必须单个导入它们变得使人烦恼，将它们组合在一个类中这将是一个很高兴的事情。因此它们可以使用一个静态导入，就像Hamcrest库匹配器一样。Hamcrest通过使用generator来做到这一点。<br>首先、创建一个xml配置文件，列出应该使用org.hamcrest.Factory注解注解的工厂方法的所有Matcher类。例如</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">matchers</span>&gt;</span></span><br><span class="line">    <span class="comment">&lt;!-- Core --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">factory</span> <span class="attr">class</span>=<span class="string">"com.think.junit.hamcrest.IsNotANumber"</span>/&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;/<span class="name">matchers</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>其次、将自己的Matcher class打成jar包（该步骤非官方提供，因为我按照官方的方法，没有调试通就自己摸索了这种方式生成Sugar）<br><img src="/2017/09/29/2017-9-29-hamcrest/hamcrest-sugar-jar.png"><br>再次、运行Hamcrest附带的org.hamcrest.generator.config.XmlConfigurator命令行工具，此工具使用xml配置文件，生成一个包含xml文件指定的所有工厂方法的java类.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">java -cp .:demo/hamcrest-generator-1.3.jar org.hamcrest.generator.config.XmlConfigurator</span><br></pre></td></tr></table></figure>
+<p>运行它没有参数时将输出使用信息<br><img src="/2017/09/29/2017-9-29-hamcrest/hamcrest-sugar-args.png"><br>下面通过终端命令行输出实例。<br><img src="/2017/09/29/2017-9-29-hamcrest/hamcrest-sugar-generator.png"><br>生成的实例代码</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Generated source.</span></span><br><span class="line"><span class="keyword">package</span> com.think.junit.hamcrest;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Matchers</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">static</span> org.hamcrest.<span class="function">Matcher <span class="title">notANumber</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> com.think.junit.hamcrest.IsNotANumber.notANumber();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>最后，我们可以更新我们的测试类以使用新的Matchers类</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> org.junit.Test;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="keyword">static</span> com.think.junit.hamcrest.Matchers.notANumber;</span><br><span class="line"><span class="keyword">import</span> <span class="keyword">static</span> org.hamcrest.MatcherAssert.assertThat;</span><br><span class="line"><span class="keyword">import</span> <span class="keyword">static</span> org.hamcrest.Matchers.is;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Created by borney on 11/29/16.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CustomSugarNumberTest</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Test</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">testSquareRootOfMinusOneIsNotANumber</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        assertThat(Math.sqrt(-<span class="number">1</span>), is(notANumber()));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>运行结果如下：<br><img src="/2017/09/29/2017-9-29-hamcrest/hamcrest-sugar-testrun.png"></p>
+<p>注意，我们现在使用的是Hamcrest库是从我们自己的Matcher类中导入的Matcher<br>本文<a href="https://github.com/borneywpf/junit4/tree/junit-read/demo" target="_blank" rel="noopener">[示例代码]</a></p>
+
+      
+    </div>
+    
+    
+    
+    
+    <div>    
+ 
+ 
+    <ul class="post-copyright">
+      <li class="post-copyright-author">
+          <strong>本文作者：</strong>Borney
+      </li>
+      <li class="post-copyright-link">
+        <strong>本文链接：</strong>
+        <a href="/2017/09/29/2017-9-29-hamcrest/" title="java单元测试之Hamcrest">2017/09/29/2017-9-29-hamcrest/</a>
+      </li>
+      <li class="post-copyright-license">
+        <strong>版权声明： </strong>
+        本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0 CN</a> 许可协议。转载请注明出处！
+      </li>
+    </ul>
+  
+</div>
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/java/" rel="tag"># java</a>
+          
+            <a href="/tags/单元测试/" rel="tag"># 单元测试</a>
+          
+            <a href="/tags/hamcrest/" rel="tag"># hamcrest</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/09/29/2017-9-29-circleimageview/" rel="next" title="Android自定义控件之CircleImageView">
+                <i class="fa fa-chevron-left"></i> Android自定义控件之CircleImageView
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/09/29/2017-9-29-CircleRotaProgressBar/" rel="prev" title="Android自定义控件之CircleRotaProgressBar">
+                Android自定义控件之CircleRotaProgressBar <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div id="uyan_frame"></div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          
+            <p class="site-author-name" itemprop="name">Borney</p>
+            <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+            
+              <a href="/archives/">
+            
+                <span class="site-state-item-count">14</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-categories">
+              <a href="/categories/index.html">
+                <span class="site-state-item-count">6</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/tags/index.html">
+                <span class="site-state-item-count">26</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/borneywpf" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>GitHub</a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Hamcrest-教程"><span class="nav-number">1.</span> <span class="nav-text">Hamcrest 教程</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#介绍"><span class="nav-number">1.1.</span> <span class="nav-text">介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#第一个Hamcrest测试"><span class="nav-number">1.2.</span> <span class="nav-text">第一个Hamcrest测试</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#其他测试框架"><span class="nav-number">1.3.</span> <span class="nav-text">其他测试框架</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#通用匹配器的浏览"><span class="nav-number">1.4.</span> <span class="nav-text">通用匹配器的浏览</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Sugar"><span class="nav-number">1.5.</span> <span class="nav-text">Sugar</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#编写自定义匹配器"><span class="nav-number">1.6.</span> <span class="nav-text">编写自定义匹配器</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Sugar-生成"><span class="nav-number">1.7.</span> <span class="nav-text">Sugar 生成</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Borney</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+  <span class="post-meta-divider">|</span>
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.2</div>
+
+
+        
+
+
+
+
+  <script type="text/javascript">
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//tajs.qq.com/stats?sId=63720031";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.2"></script>
+
+
+
+  
+  
+
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.2"></script>
+
+
+  
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+    
+
+    
+      <!-- UY BEGIN -->
+      <script type="text/javascript" src="http://v2.uyan.cc/code/uyan.js?uid=2145075"></script>
+      <!-- UY END -->
+    
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("87F3QvzSkjwM9WpKLPGupbUk-gzGzoHsz", "GW1l2J4GFXAc2AAqPQfPNYLy");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

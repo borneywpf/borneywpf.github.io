@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.2" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="android,toast,原理剖析," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.2" />
+
+
+
+
+
+
+<meta name="description" content="Toast 对大家来说是一个熟悉的不能再熟悉的东西了，但是究竟什么是Toast,Toast的原理是什么，可能就会有一部分人不知道了，今天我们就来细致的剖析下这个Toast,做到知其然并知其所以然 什么是Toast借鉴官方的表述：  A toast is a view containing a quick little ">
+<meta name="keywords" content="android,toast,原理剖析">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Toast 原理剖析">
+<meta property="og:url" content="http://thinkdevos.net/2017/10/13/2017-10-13-toast/index.html">
+<meta property="og:site_name" content="Borney的博客">
+<meta property="og:description" content="Toast 对大家来说是一个熟悉的不能再熟悉的东西了，但是究竟什么是Toast,Toast的原理是什么，可能就会有一部分人不知道了，今天我们就来细致的剖析下这个Toast,做到知其然并知其所以然 什么是Toast借鉴官方的表述：  A toast is a view containing a quick little message for the user. The toast class he">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://thinkdevos.net/2017/10/13/2017-10-13-toast/toast.png">
+<meta property="og:updated_time" content="2017-12-05T02:02:20.812Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Toast 原理剖析">
+<meta name="twitter:description" content="Toast 对大家来说是一个熟悉的不能再熟悉的东西了，但是究竟什么是Toast,Toast的原理是什么，可能就会有一部分人不知道了，今天我们就来细致的剖析下这个Toast,做到知其然并知其所以然 什么是Toast借鉴官方的表述：  A toast is a view containing a quick little message for the user. The toast class he">
+<meta name="twitter:image" content="http://thinkdevos.net/2017/10/13/2017-10-13-toast/toast.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.2',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://thinkdevos.net/2017/10/13/2017-10-13-toast/"/>
+
+
+
+
+
+  <title>Toast 原理剖析 | Borney的博客</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Borney的博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://thinkdevos.net/2017/10/13/2017-10-13-toast/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Borney">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Borney的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Toast 原理剖析</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-10-13T17:26:13+08:00">
+                2017-10-13
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/android/" itemprop="url" rel="index">
+                    <span itemprop="name">android</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+             <span id="/2017/10/13/2017-10-13-toast/" class="leancloud_visitors" data-flag-title="Toast 原理剖析">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+      
+      
+
+      
+        <p><a href="https://developer.android.google.cn/reference/android/widget/Toast.html" target="_blank" rel="noopener"><strong>Toast</strong></a> 对大家来说是一个熟悉的不能再熟悉的东西了，但是究竟什么是Toast,Toast的原理是什么，可能就会有一部分人不知道了，今天我们就来细致的剖析下这个Toast,做到知其然并知其所以然</p>
+<h1 id="什么是Toast"><a href="#什么是Toast" class="headerlink" title="什么是Toast"></a>什么是Toast</h1><p>借鉴官方的表述：</p>
+<blockquote>
+<p>A toast is a view containing a quick little message for the user. The toast class helps you create and show those.  </p>
+<p>Toast 就是一个向用户快速展示简短信息的View,Toast这个类就是帮助你做这个事情的</p>
+</blockquote>
+<h1 id="Toast能做什么"><a href="#Toast能做什么" class="headerlink" title="Toast能做什么"></a>Toast能做什么</h1><p>同样借鉴官方的描述:</p>
+<blockquote>
+<p>When the view is shown to the user, appears as a floating view over the application. It will never receive focus. The user will probably be in the middle of typing something else. The idea is to be as unobtrusive as possible, while still showing the user the information you want them to see. Two examples are the volume control, and the brief message saying that your settings have been saved.</p>
+<p>当向用户展示这个View时，应用程序显示为浮动View,它不会获得焦点，展示的时候用户可能在做其他事情，设计Toast的想法就是尽可能不引起用户的注意，同时应用也向用户展示想让用户看到的信息。系统中两个例子，音量调节和设置信息被保存的提示</p>
+</blockquote>
+<p>关于Toast的使用就参考官方文档吧，<a href="https://developer.android.google.cn/guide/topics/ui/notifiers/toasts.html" target="_blank" rel="noopener">Toast Notifications developer guide</a>  </p>
+<h1 id="Toast原理剖析"><a href="#Toast原理剖析" class="headerlink" title="Toast原理剖析"></a>Toast原理剖析</h1><p>接下来就是本文的重头戏了，剖析Toast原理(以下源码都是基于Android5.0分析的，大家注重学习原理，具体细节可自己通过源码去分析)</p>
+<p>本文相关代码：<br>framework/base/core/java/android/widget/Toast.java<br>framework/base/services/core/java/com/android/server/notification/NotificationManagerService.java<br>framework/base/core/java/android/app/ITransientNotification.aidl  </p>
+<h2 id="Toast对象的创建"><a href="#Toast对象的创建" class="headerlink" title="Toast对象的创建"></a>Toast对象的创建</h2><figure class="highlight java"><figcaption><span>Toast.java</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Toast <span class="title">makeText</span><span class="params">(Context context, CharSequence text, @Duration <span class="keyword">int</span> duration)</span> </span>&#123;</span><br><span class="line">        Toast result = <span class="keyword">new</span> Toast(context); <span class="comment">//创建对象</span></span><br><span class="line"></span><br><span class="line">        LayoutInflater inflate = (LayoutInflater)</span><br><span class="line">                context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);</span><br><span class="line">        View v = inflate.inflate(com.android.internal.R.layout.transient_notification, <span class="keyword">null</span>); <span class="comment">//获得Toast默认布局</span></span><br><span class="line">        ...</span><br><span class="line">        </span><br><span class="line">        result.mNextView = v; <span class="comment">//</span></span><br><span class="line">        result.mDuration = duration;  <span class="comment">//Toast持续时间</span></span><br><span class="line"></span><br><span class="line">        ...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">Toast</span><span class="params">(Context context)</span> </span>&#123;</span><br><span class="line">        mContext = context;</span><br><span class="line">        mTN = <span class="keyword">new</span> TN(); <span class="comment">//**这里是关键**</span></span><br><span class="line">        </span><br><span class="line">        ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="Toast的show方法"><a href="#Toast的show方法" class="headerlink" title="Toast的show方法"></a>Toast的show方法</h2><figure class="highlight java"><figcaption><span>Toast.java</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">show</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        ...</span><br><span class="line">        INotificationManager service = getService();</span><br><span class="line">        String pkg = mContext.getOpPackageName();</span><br><span class="line">        TN tn = mTN;</span><br><span class="line">        tn.mNextView = mNextView;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            service.enqueueToast(pkg, tn, mDuration); <span class="comment">//调用NotificationManagerService(后边会用NMS代替)的enqueueToast方法</span></span><br><span class="line">        &#125; <span class="keyword">catch</span> (RemoteException e) &#123;</span><br><span class="line">            <span class="comment">// Empty</span></span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>通过上述的代码，我们发现TN这个类很关键，下面我们先分析下这个类</p>
+<h2 id="TN的声明"><a href="#TN的声明" class="headerlink" title="TN的声明"></a>TN的声明</h2><figure class="highlight java"><figcaption><span>Toast.java</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">TN</span> <span class="keyword">extends</span> <span class="title">ITransientNotification</span>.<span class="title">Stub</span> </span>&#123;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><figcaption><span>ITransientNotification.aidl</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> android.app;</span><br><span class="line"></span><br><span class="line">oneway <span class="class"><span class="keyword">interface</span> <span class="title">ITransientNotification</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">show</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">hide</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>由此可见TN是一个binder对象，那么它是做什么的呢？上边show方法中Toast的mTN变量传递给了NMS，这个调用属于IPC调用，而TN就是IPC回调接口</p>
+<h2 id="TN的show方法"><a href="#TN的show方法" class="headerlink" title="TN的show方法"></a>TN的show方法</h2><p>通过查看TN的show方法，在show方法中通过Handler发送消息，并调用handleShow方法，这是因为IPC show回调在binder线程中运行</p>
+<figure class="highlight java"><figcaption><span>Toast.java</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">handleShow</span><span class="params">()</span> </span>&#123;</span><br><span class="line">            ...</span><br><span class="line">            </span><br><span class="line">            <span class="keyword">if</span> (mView != mNextView) &#123;</span><br><span class="line">                <span class="comment">// remove the old view if necessary</span></span><br><span class="line">                handleHide(); <span class="comment">//隐藏旧的view    </span></span><br><span class="line">                ...</span><br><span class="line">                mWM = (WindowManager)context.getSystemService(Context.WINDOW_SERVICE);  </span><br><span class="line">                ...<span class="comment">//此处略过参数设置</span></span><br><span class="line">                mWM.addView(mView, mParams); <span class="comment">//通过WMS添加一个view</span></span><br><span class="line">                ...</span><br><span class="line">            &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>这样Toast的Window就显示在了窗口上</p>
+<h2 id="TN的hide方法"><a href="#TN的hide方法" class="headerlink" title="TN的hide方法"></a>TN的hide方法</h2><p>TN的hide方法和上述的show方法原理是一样的，通过WMS removeView来实现隐藏</p>
+<h2 id="NMS的enqueueToast方法"><a href="#NMS的enqueueToast方法" class="headerlink" title="NMS的enqueueToast方法"></a>NMS的enqueueToast方法</h2><p>接下来让我们回到上述的enqueueToast方法中，其中mToastQueue是一个保存ToastRecord(用于保存对应Toast的相关数据，如package，TN callback等)的列表</p>
+<figure class="highlight java"><figcaption><span>NotificationManagerService.java</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">enqueueToast</span><span class="params">(String pkg, ITransientNotification callback, <span class="keyword">int</span> duration)</span></span></span><br><span class="line"><span class="function">        </span>&#123;</span><br><span class="line">            ...</span><br><span class="line">            <span class="keyword">synchronized</span> (mToastQueue) &#123;</span><br><span class="line">                <span class="keyword">int</span> callingPid = Binder.getCallingPid();</span><br><span class="line">                <span class="keyword">long</span> callingId = Binder.clearCallingIdentity();</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    ToastRecord record;</span><br><span class="line">                    <span class="keyword">int</span> index = indexOfToastLocked(pkg, callback); <span class="comment">//存列表中查找Toast</span></span><br><span class="line"></span><br><span class="line">                    <span class="keyword">if</span> (index &gt;= <span class="number">0</span>) &#123; <span class="comment">//找到进行更新操作</span></span><br><span class="line">                        ...</span><br><span class="line">                        <span class="comment">//找到进行更新操作</span></span><br><span class="line">                        ...</span><br><span class="line">                    &#125; <span class="keyword">else</span> &#123; <span class="comment">//没有在列表中找到</span></span><br><span class="line">                        ...</span><br><span class="line">                        <span class="comment">//如果不是系统Toast,一个应用未处理的Toast最大上限是50个                        </span></span><br><span class="line">                        ...</span><br><span class="line">                        record = <span class="keyword">new</span> ToastRecord(callingPid, pkg, callback, duration);</span><br><span class="line">                        mToastQueue.add(record); <span class="comment">// 创建ToastRecord并添加到列表中</span></span><br><span class="line">                        index = mToastQueue.size() - <span class="number">1</span>;</span><br><span class="line">                        keepProcessAliveLocked(callingPid); <span class="comment">//保持发Toast请求的应用进程是前端进程</span></span><br><span class="line">                    &#125;</span><br><span class="line">                  </span><br><span class="line">                    <span class="keyword">if</span> (index == <span class="number">0</span>) &#123;</span><br><span class="line">                        showNextToastLocked(); <span class="comment">//开始处理Toast</span></span><br><span class="line">                    &#125;</span><br><span class="line">                &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">                    Binder.restoreCallingIdentity(callingId);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br></pre></td></tr></table></figure>
+<h2 id="NMS的showNextToastLocked方法"><a href="#NMS的showNextToastLocked方法" class="headerlink" title="NMS的showNextToastLocked方法"></a>NMS的showNextToastLocked方法</h2><p>接下来我们分析下showNextToastLocked方法，至于其他方法对我们分析Toast原理的意义不是很大，当然也很简单，这里就略过了</p>
+<figure class="highlight java"><figcaption><span>NotificationManagerService.java</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">showNextToastLocked</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        ToastRecord record = mToastQueue.get(<span class="number">0</span>);</span><br><span class="line">        <span class="keyword">while</span> (record != <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">if</span> (DBG) Slog.d(TAG, <span class="string">"Show pkg="</span> + record.pkg + <span class="string">" callback="</span> + record.callback);</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                record.callback.show(); <span class="comment">//这个IPC 回调TN的show方法</span></span><br><span class="line">                scheduleTimeoutLocked(record); <span class="comment">//发送一个延时消息</span></span><br><span class="line">                <span class="keyword">return</span>;</span><br><span class="line">            &#125; <span class="keyword">catch</span> (RemoteException e) &#123;</span><br><span class="line">                ...              </span><br><span class="line">                <span class="keyword">int</span> index = mToastQueue.indexOf(record);</span><br><span class="line">                <span class="keyword">if</span> (index &gt;= <span class="number">0</span>) &#123;</span><br><span class="line">                    mToastQueue.remove(index); <span class="comment">//如果IPC调用失败，要将record从列表中移除</span></span><br><span class="line">                &#125;  </span><br><span class="line">                ...</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="NMS的scheduleTimeoutLocked方法"><a href="#NMS的scheduleTimeoutLocked方法" class="headerlink" title="NMS的scheduleTimeoutLocked方法"></a>NMS的scheduleTimeoutLocked方法</h2><figure class="highlight java"><figcaption><span>NotificationManagerService.java</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">scheduleTimeoutLocked</span><span class="params">(ToastRecord r)</span> </span>&#123;</span><br><span class="line">        mHandler.removeCallbacksAndMessages(r);</span><br><span class="line">        Message m = Message.obtain(mHandler, MESSAGE_TIMEOUT, r);</span><br><span class="line">        <span class="keyword">long</span> delay = r.duration == Toast.LENGTH_LONG ? LONG_DELAY : SHORT_DELAY; </span><br><span class="line">        </span><br><span class="line">        <span class="comment">//由此可以看出Toast的LENGTH_LONG显示3500ms,LENGTH_SHORT显示2000ms</span></span><br><span class="line">        </span><br><span class="line">        mHandler.sendMessageDelayed(m, delay);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>下面我们看看MESSAGE_TIMEOUT消息的处理</p>
+<figure class="highlight java"><figcaption><span>NotificationManagerService.java</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">handleTimeout</span><span class="params">(ToastRecord record)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (DBG) Slog.d(TAG, <span class="string">"Timeout pkg="</span> + record.pkg + <span class="string">" callback="</span> + record.callback);</span><br><span class="line">        <span class="keyword">synchronized</span> (mToastQueue) &#123;</span><br><span class="line">            <span class="keyword">int</span> index = indexOfToastLocked(record.pkg, record.callback); <span class="comment">//查找ToastRecord</span></span><br><span class="line">            <span class="keyword">if</span> (index &gt;= <span class="number">0</span>) &#123;</span><br><span class="line">                cancelToastLocked(index); <span class="comment">//调用cancel方法，</span></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="NMS的cancelToastLocked方法"><a href="#NMS的cancelToastLocked方法" class="headerlink" title="NMS的cancelToastLocked方法"></a>NMS的cancelToastLocked方法</h2><figure class="highlight java"><figcaption><span>NotificationManagerService.java</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">cancelToastLocked</span><span class="params">(<span class="keyword">int</span> index)</span> </span>&#123;</span><br><span class="line">        ToastRecord record = mToastQueue.get(index);</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            record.callback.hide(); <span class="comment">//IPC回调TN的hide方法</span></span><br><span class="line">        &#125; <span class="keyword">catch</span> (RemoteException e) &#123;</span><br><span class="line">            ...</span><br><span class="line">        &#125;</span><br><span class="line">        mToastQueue.remove(index); <span class="comment">//从队列中移除ToastRecord</span></span><br><span class="line">        keepProcessAliveLocked(record.pid);</span><br><span class="line">        <span class="keyword">if</span> (mToastQueue.size() &gt; <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="comment">// Show the next one. If the callback fails, this will remove</span></span><br><span class="line">            <span class="comment">// it from the list, so don't assume that the list hasn't changed</span></span><br><span class="line">            <span class="comment">// after this point.</span></span><br><span class="line">            showNextToastLocked(); <span class="comment">//继续处理队列中下一个消息</span></span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>下面我们用一个简单的图做下总结，其中一些方法是通过发送消息调用的，这些细节没有在图中体现出来，能看出大概原理就好，希望能帮助到大家</p>
+<img src="/2017/10/13/2017-10-13-toast/toast.png" title="Toast显示隐藏时序图">
+
+      
+    </div>
+    
+    
+    
+    
+    <div>    
+ 
+ 
+    <ul class="post-copyright">
+      <li class="post-copyright-author">
+          <strong>本文作者：</strong>Borney
+      </li>
+      <li class="post-copyright-link">
+        <strong>本文链接：</strong>
+        <a href="/2017/10/13/2017-10-13-toast/" title="Toast 原理剖析">2017/10/13/2017-10-13-toast/</a>
+      </li>
+      <li class="post-copyright-license">
+        <strong>版权声明： </strong>
+        本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0 CN</a> 许可协议。转载请注明出处！
+      </li>
+    </ul>
+  
+</div>
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/android/" rel="tag"># android</a>
+          
+            <a href="/tags/toast/" rel="tag"># toast</a>
+          
+            <a href="/tags/原理剖析/" rel="tag"># 原理剖析</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/09/29/2017-9-29-CollectionFramework/" rel="next" title="java集合框架">
+                <i class="fa fa-chevron-left"></i> java集合框架
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/10/25/2017-10-25-lrucache/" rel="prev" title="LruCache原理分析">
+                LruCache原理分析 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div id="uyan_frame"></div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          
+            <p class="site-author-name" itemprop="name">Borney</p>
+            <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+            
+              <a href="/archives/">
+            
+                <span class="site-state-item-count">14</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-categories">
+              <a href="/categories/index.html">
+                <span class="site-state-item-count">6</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/tags/index.html">
+                <span class="site-state-item-count">26</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/borneywpf" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>GitHub</a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#什么是Toast"><span class="nav-number">1.</span> <span class="nav-text">什么是Toast</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Toast能做什么"><span class="nav-number">2.</span> <span class="nav-text">Toast能做什么</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Toast原理剖析"><span class="nav-number">3.</span> <span class="nav-text">Toast原理剖析</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Toast对象的创建"><span class="nav-number">3.1.</span> <span class="nav-text">Toast对象的创建</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Toast的show方法"><span class="nav-number">3.2.</span> <span class="nav-text">Toast的show方法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#TN的声明"><span class="nav-number">3.3.</span> <span class="nav-text">TN的声明</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#TN的show方法"><span class="nav-number">3.4.</span> <span class="nav-text">TN的show方法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#TN的hide方法"><span class="nav-number">3.5.</span> <span class="nav-text">TN的hide方法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#NMS的enqueueToast方法"><span class="nav-number">3.6.</span> <span class="nav-text">NMS的enqueueToast方法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#NMS的showNextToastLocked方法"><span class="nav-number">3.7.</span> <span class="nav-text">NMS的showNextToastLocked方法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#NMS的scheduleTimeoutLocked方法"><span class="nav-number">3.8.</span> <span class="nav-text">NMS的scheduleTimeoutLocked方法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#NMS的cancelToastLocked方法"><span class="nav-number">3.9.</span> <span class="nav-text">NMS的cancelToastLocked方法</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#总结"><span class="nav-number">4.</span> <span class="nav-text">总结</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Borney</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+  <span class="post-meta-divider">|</span>
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.2</div>
+
+
+        
+
+
+
+
+  <script type="text/javascript">
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//tajs.qq.com/stats?sId=63720031";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.2"></script>
+
+
+
+  
+  
+
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.2"></script>
+
+
+  
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+    
+
+    
+      <!-- UY BEGIN -->
+      <script type="text/javascript" src="http://v2.uyan.cc/code/uyan.js?uid=2145075"></script>
+      <!-- UY END -->
+    
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("87F3QvzSkjwM9WpKLPGupbUk-gzGzoHsz", "GW1l2J4GFXAc2AAqPQfPNYLy");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

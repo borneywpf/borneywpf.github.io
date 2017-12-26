@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.2" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="java,动态代理," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.2" />
+
+
+
+
+
+
+<meta name="description" content="java中的代理某些情况下，我们无法或者不希望直接对一个对象进行访问时，我们就会用到设计模式中的代理模式(如下图)，通常情况下，为了保持行为的一致性，代理类和委托类拥有相同的实现接口,在使用委托类的地方都是可以用代理类来替换；代理类负责预处理消息，并转发消息给委托类、以及对委托类执行完后返回消息的处理；可以这样理解委托">
+<meta name="keywords" content="java,动态代理">
+<meta property="og:type" content="article">
+<meta property="og:title" content="java之动态代理">
+<meta property="og:url" content="http://thinkdevos.net/2017/09/22/2017-09-22/index.html">
+<meta property="og:site_name" content="Borney的博客">
+<meta property="og:description" content="java中的代理某些情况下，我们无法或者不希望直接对一个对象进行访问时，我们就会用到设计模式中的代理模式(如下图)，通常情况下，为了保持行为的一致性，代理类和委托类拥有相同的实现接口,在使用委托类的地方都是可以用代理类来替换；代理类负责预处理消息，并转发消息给委托类、以及对委托类执行完后返回消息的处理；可以这样理解委托类负责过程的具体实现，代理类负责过程实现前后的处理.这样能有效的控制对委托类的直">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://thinkdevos.net/2017/09/22/2017-09-22/1.png">
+<meta property="og:updated_time" content="2017-12-05T02:02:20.812Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="java之动态代理">
+<meta name="twitter:description" content="java中的代理某些情况下，我们无法或者不希望直接对一个对象进行访问时，我们就会用到设计模式中的代理模式(如下图)，通常情况下，为了保持行为的一致性，代理类和委托类拥有相同的实现接口,在使用委托类的地方都是可以用代理类来替换；代理类负责预处理消息，并转发消息给委托类、以及对委托类执行完后返回消息的处理；可以这样理解委托类负责过程的具体实现，代理类负责过程实现前后的处理.这样能有效的控制对委托类的直">
+<meta name="twitter:image" content="http://thinkdevos.net/2017/09/22/2017-09-22/1.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.2',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://thinkdevos.net/2017/09/22/2017-09-22/"/>
+
+
+
+
+
+  <title>java之动态代理 | Borney的博客</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Borney的博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://thinkdevos.net/2017/09/22/2017-09-22/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Borney">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Borney的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">java之动态代理</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-09-22T16:55:38+08:00">
+                2017-09-22
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/java/" itemprop="url" rel="index">
+                    <span itemprop="name">java</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+             <span id="/2017/09/22/2017-09-22/" class="leancloud_visitors" data-flag-title="java之动态代理">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+      
+      
+
+      
+        <h1 id="java中的代理"><a href="#java中的代理" class="headerlink" title="java中的代理"></a>java中的代理</h1><p>某些情况下，我们无法或者不希望直接对一个对象进行访问时，我们就会用到设计模式中的<strong>代理模式</strong>(如下图)，通常情况下，为了保持行为的一致性，代理类和委托类拥有相同的实现接口,在使用委托类的地方都是可以用代理类来替换；代理类负责预处理消息，并转发消息给委托类、以及对委托类执行完后返回消息的处理；可以这样理解<span style="color:orange;"><em>委托类负责过程的具体实现，代理类负责过程实现前后的处理</em></span>.这样能有效的控制对委托类的直接访问，在设计上获得了更大的灵活性.</p>
+<img src="/2017/09/22/2017-09-22/1.png" title="代理模式">
+<p><strong>可以根据程序运行时，代理类是否存在将代理分为静态代理和动态代理</strong></p>
+<h2 id="静态代理"><a href="#静态代理" class="headerlink" title="静态代理"></a>静态代理</h2><p>根据定义，静态代理是指代理类在runtime之前已经存在，不管代理类是开发编辑的还是由编译器在程序编译的过程中生成的，这都属于静态代理.</p>
+<p>公共接口</p>
+<figure class="highlight java"><figcaption><span>Subject.java</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">Subject</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">doSomething</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>委托类</p>
+<figure class="highlight java"><figcaption><span>RealSubject.java</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">RealSubject</span> <span class="keyword">implements</span> <span class="title">Subject</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">doSomething</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        println(<span class="string">"RealSubject doSomething"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>代理类</p>
+<figure class="highlight java"><figcaption><span>ProxySubject.java</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ProxySubject</span> <span class="keyword">implements</span> <span class="title">Subject</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> Subject real;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">ProxySubject</span><span class="params">(Subject real)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.real = real;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">doSomething</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        println(<span class="string">"ProxySubject before real doSomething"</span>);</span><br><span class="line">        real.doSomething();</span><br><span class="line">        println(<span class="string">"ProxySubject end real doSomething"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">doOtherthing</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        println(<span class="string">"ProxySubject doOtherthing"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>访问类</p>
+<figure class="highlight java"><figcaption><span>Client.java</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Client</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        RealSubject real = <span class="keyword">new</span> RealSubject();</span><br><span class="line">        ProxySubject proxy = <span class="keyword">new</span> ProxySubject(real);</span><br><span class="line"></span><br><span class="line">        proxy.doSomething();</span><br><span class="line">        proxy.doOtherthing();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">ProxySubject before real doSomething</span></span><br><span class="line"><span class="comment">RealSubject doSomething</span></span><br><span class="line"><span class="comment">ProxySubject end real doSomething</span></span><br><span class="line"><span class="comment">ProxySubject doOtherthing</span></span><br><span class="line"><span class="comment"> */</span></span><br></pre></td></tr></table></figure>
+<p>由上述代码可以看出，业务(委托类的doSomething方法)的具体实现只关注业务本身，代理类的使用隐藏了业务具体实现，使得业务的重用性更高；然而在现实开发过程中，这种实现是非常少见的，一般情况，业务类会是多个接口的实现，而代理的过程中也需要实现这些接口，且根据不同业务封装，可能就会产生多个代理类，导致类泛滥的情况.再比如由于接口封装一些业务实现不是public，而这时又因为功能需求，不得不访问这些接口的时候，这种代理方式就显得比较鸡肋了；这些情况下，就需要依靠java的反射和动态代理来解决了.</p>
+<h2 id="动态代理"><a href="#动态代理" class="headerlink" title="动态代理"></a>动态代理</h2><p>相关的类和接口<br><a href="http://grepcode.com/file/repository.grepcode.com/java/root/jdk/openjdk/8u40-b25/java/lang/reflect/Proxy.java?av=f" target="_blank" rel="noopener">java.lang.reflect.Proxy</a><br>提供了一系列的static方法，用来创建代理类或对象，这个类是所有动态代理类的父类.<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/reflect/Proxy.html" target="_blank" rel="noopener">参见官方api</a><br><a href="http://grepcode.com/file/repository.grepcode.com/java/root/jdk/openjdk/8u40-b25/java/lang/reflect/InvocationHandler.java?av=f" target="_blank" rel="noopener">java.lang.reflect.InvocationHandler</a><br>这是调用处理器接口，只有一个invoke方法，处理动态代理类对象方法的调用，每个动态代理类都会关联一个InvocationHandler.<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/reflect/InvocationHandler.html" target="_blank" rel="noopener">参见官方api</a></p>
+<figure class="highlight java"><figcaption><span>StubClient.java</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">StubClient</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        StubClient client = <span class="keyword">new</span> StubClient();</span><br><span class="line">        <span class="comment">//(2)通过为 Proxy 类指定 ClassLoader 对象和一组 interface 来创建动态代理类</span></span><br><span class="line">        Class&lt;?&gt; proxyClass = Proxy.getProxyClass(Stub.class.getClassLoader(), <span class="keyword">new</span> Class&lt;?&gt;[]&#123;Subject.class&#125;);</span><br><span class="line">        <span class="comment">//(3)通过反射机制获得动态代理类的构造函数，其唯一参数类型是调用处理器接口类型</span></span><br><span class="line">        Constructor&lt;?&gt; proxyClassConstructor = proxyClass.getConstructor(<span class="keyword">new</span> Class&lt;?&gt;[]&#123;InvocationHandler.class&#125;);</span><br><span class="line">        <span class="comment">//(4)通过构造函数创建动态代理类实例，构造时调用处理器对象作为参数被传入</span></span><br><span class="line">        Object o = proxyClassConstructor.newInstance(client.handler);</span><br><span class="line">        <span class="comment">//(5)通过动态代理对象调用</span></span><br><span class="line">        Subject subject = (Subject) o;</span><br><span class="line">        <span class="comment">//(6)输出委托类的结果</span></span><br><span class="line">        subject.doSomething();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//(1)通过实现 InvocationHandler 接口创建自己的调用处理器</span></span><br><span class="line">    <span class="keyword">private</span> InvocationHandler handler = <span class="keyword">new</span> InvocationHandler() &#123;</span><br><span class="line">        <span class="comment">//创建委托类对象实例</span></span><br><span class="line">        <span class="keyword">private</span> RealSubject real = <span class="keyword">new</span> RealSubject();</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> Object <span class="title">invoke</span><span class="params">(Object proxy, Method method, Object[] args)</span> <span class="keyword">throws</span> Throwable </span>&#123;</span><br><span class="line">            <span class="comment">//调用委托类的方法</span></span><br><span class="line">            <span class="keyword">return</span> method.invoke(real, args);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">输出：</span></span><br><span class="line"><span class="comment">RealSubject doSomething</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//简化上述(2)(3)(4)步骤</span></span><br><span class="line">Object o = Proxy.newProxyInstance(Stub.class.getClassLoader(), <span class="keyword">new</span> Class&lt;?&gt;[] &#123;Subject.class&#125;, client.handler);</span><br></pre></td></tr></table></figure>
+<h1 id="动态代理类的属性"><a href="#动态代理类的属性" class="headerlink" title="动态代理类的属性"></a>动态代理类的属性</h1><ul>
+<li>如果所有的代理接口都是public的，那么代理类就是public、final的，切不是abstract的</li>
+<li>动态代理类的名称以”$ProxyN”开头,N是代理类的唯一编号.</li>
+<li>动态代理类都继承于java.lang.reflect.Proxy</li>
+<li>动态代理类实现了其创建时指定的接口，且保持接口指定的顺序</li>
+<li>如果动态代理类实现了一个非public接口，那么它将定义和接口相同的包名；否则代理类的包是不确定的，默认是com.sun.proxy,运行时，包密封性不防止特定包成功定义代理类；如果都不是，动态代理类将由同一个类加载器和相同的包与特定签名定义.</li>
+<li>动态代理类实现了其创建时指定的所有接口，调用代理类Class对象的getInterfaces将返回和创建时指定接口顺序相同的列表，调用 getMethods方法返回所有接口方法的数组对象，调用getMethod会返回代理类接口中期望的method.</li>
+<li>调用Proxy.isProxyClass方法时,传入Proxy.getProxyClass返回的Class或者Proxy.newProxyInstance返回对象的Class，都会返回true，否则返回false.</li>
+<li>代理类的java.security.ProtectionDomain是由系统根类加载器加载的，代理类的代码也是系统信任的代码生成的，此保护域通常被授予java.security.AllPermission</li>
+<li>每一个代理类都有一个public的，含有一个InvocationHandler实现为参数的构造方法，设置了调用处理器接口，就不必使用反射api访问构造方法，通过Proxy.newProxyInstance可以产生和Proxy.getProxyClass和调用句柄相同的调用构造函数行为.</li>
+</ul>
+<h1 id="动态代理实例的属性"><a href="#动态代理实例的属性" class="headerlink" title="动态代理实例的属性"></a>动态代理实例的属性</h1><ul>
+<li>给定一个代理实例proxy，Foo实现的接口之一，表达式 proxy instanceof Foo 返回true,(Foo) proxy能成功转换.</li>
+<li>每个代理实例都关联一个InvocationHandler， 通过Proxy.getInvocationHandler方法，将返回代理类关联的InvocationHandler.</li>
+<li>代理类实例调用其代理接口中所声明的方法时，这些方法将被编码，并最终由调用处理器(InvocationHandler)的invoke方法执行.</li>
+<li>代理类根类java.lang.Object中的hashCode,equals和toString方法，也会被分派到调用处理其的invoke方法执行；可能的原因有：一是因为这些方法为 public 且非 final 类型，能够被代理类覆盖；二是因为这些方法往往呈现出一个类的某种特征属性，具有一定的区分度，所以为了保证代理类与委托类对外的一致性，这三个方法也应该被分派到委托类执行。</li>
+<li>当代理的一组接口有重复声明的方法且该方法被调用时，代理类总是从排在最前面的接口中获取方法对象并分派给调用处理器，而无论代理类实例是否正在以该接口（或继承于该接口的某子接口）的形式被外部引用，因为在代理类内部无法区分其当前的被引用类型。</li>
+</ul>
+<h1 id="获取动态代理类时需要注意哪些？"><a href="#获取动态代理类时需要注意哪些？" class="headerlink" title="获取动态代理类时需要注意哪些？"></a>获取动态代理类时需要注意哪些？</h1><figure class="highlight java"><figcaption><span>Proxy.java</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> Class&lt;?&gt; getProxyClass(ClassLoader loader, Class&lt;?&gt;... interfaces)</span><br></pre></td></tr></table></figure>
+<p>通过指定的ClassLoader loader和有序的interfaces，ClassLoader将动态生成实现有序interfaces的代理类，如果这个ClassLoader已经定义过相同有序接口实现的代理类，那么将不在重复定义.</p>
+<ul>
+<li>所有interfaces中的对象必须都是接口，否则会抛出异常</li>
+<li>interfaces中的接口不能重复</li>
+<li>所有接口相对指定的ClassLoader必须是可见的</li>
+<li>所有的非public接口必须在同一个包中，否这不能成功生成实现所有接口的代理类.</li>
+<li>代理类的接口数目不能超过65535，这个是JVM所限定的</li>
+</ul>
+<p>当不满足上述限定中的一条或多条时，将会抛出IllegalArgumentException异常，如果interfaces中的接口对象一个或多个是null，也将抛出NullPointerException.<br><strong>注意：</strong>代理类指定的接口的顺序是很重要的，否则不通顺序的相同接口数组将会导致生成不同的代理类</p>
+<h1 id="从源码中理解动态代理类的生成"><a href="#从源码中理解动态代理类的生成" class="headerlink" title="从源码中理解动态代理类的生成"></a>从源码中理解动态代理类的生成</h1><p>上面我们讲述了动态代理的使用，动态代理类的属性，动态代理实例的属性，以及获取动态代理类时需要注意的事项，下面我们从源码角度去观察这些东西</p>
+<p>Proxy的重要变量</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//构造器参数类型</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Class&lt;?&gt;[] constructorParams = &#123; InvocationHandler.class &#125;;</span><br><span class="line"><span class="comment">//代理类缓存</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> WeakCache&lt;ClassLoader, Class&lt;?&gt;[], Class&lt;?&gt;&gt; proxyClassCache = <span class="keyword">new</span> WeakCache&lt;&gt;(<span class="keyword">new</span> KeyFactory(), <span class="keyword">new</span> ProxyClassFactory());</span><br><span class="line"><span class="comment">//关联的调用处理器</span></span><br><span class="line"><span class="keyword">protected</span> InvocationHandler h;</span><br></pre></td></tr></table></figure>
+<p>Proxy的构造方法</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//私有构造函数，禁止外部调用</span></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="title">Proxy</span><span class="params">()</span> </span>&#123;&#125;</span><br><span class="line"><span class="comment">// 通过子类指定一个调用处理器接口</span></span><br><span class="line"><span class="function"><span class="keyword">protected</span> <span class="title">Proxy</span><span class="params">(InvocationHandler h)</span> </span>&#123;</span><br><span class="line">    doNewInstanceCheck();</span><br><span class="line">    <span class="keyword">this</span>.h = h;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Proxy.newProxyInstance函数分析</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Object <span class="title">newProxyInstance</span><span class="params">(ClassLoader loader,</span></span></span><br><span class="line"><span class="function"><span class="params">                                      Class&lt;?&gt;[] interfaces,</span></span></span><br><span class="line"><span class="function"><span class="params">                                      InvocationHandler h)</span><span class="keyword">throws</span> IllegalArgumentException </span>&#123;</span><br><span class="line">    ....</span><br><span class="line">    <span class="comment">//(1)权限检查和校验</span></span><br><span class="line">    checkProxyAccess(Reflection.getCallerClass(), loader, intfs);</span><br><span class="line">    ....</span><br><span class="line">    <span class="comment">//(2)查找已经存在的或动态生成生成代理类</span></span><br><span class="line">    Class&lt;?&gt; cl = getProxyClass0(loader, intfs);</span><br><span class="line">    ...</span><br><span class="line">    <span class="comment">//(3)通过反射调用含有调用处理器参数的构造函数生成动态代理类的实例对象并返回</span></span><br><span class="line">    <span class="keyword">return</span> newInstance(cons, ih);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Proxy.getProxyClass函数分析</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> Class&lt;?&gt; getProxyClass(ClassLoader loader,</span><br><span class="line">                                     Class&lt;?&gt;... interfaces)<span class="keyword">throws</span> IllegalArgumentException &#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="comment">//(1)权限检查和校验</span></span><br><span class="line">    checkProxyAccess(Reflection.getCallerClass(), loader, intfs);</span><br><span class="line">    ...</span><br><span class="line">    <span class="comment">//(2)返回查找已经存在的或动态生成生成代理类</span></span><br><span class="line">    <span class="keyword">return</span> getProxyClass0(loader, intfs);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Proxy.checkProxyAccess函数分析 </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">caller 调用Proxy.getProxyClass或Proxy.newProxyInstance接口的类</span></span><br><span class="line"><span class="comment">loader 调用接口时传入的ClassLoader</span></span><br><span class="line"><span class="comment">interfaces 调用接口时传入的接口列表</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">checkProxyAccess</span><span class="params">(Class&lt;?&gt; caller,</span></span></span><br><span class="line"><span class="function"><span class="params">                                         ClassLoader loader,</span></span></span><br><span class="line"><span class="function"><span class="params">                                         Class&lt;?&gt;... interfaces)</span> </span>&#123;</span><br><span class="line">        SecurityManager sm = System.getSecurityManager();</span><br><span class="line">        <span class="keyword">if</span> (sm != <span class="keyword">null</span>) &#123;</span><br><span class="line">            ClassLoader ccl = caller.getClassLoader();</span><br><span class="line">            <span class="keyword">if</span> (loader == <span class="keyword">null</span> &amp;&amp; ccl != <span class="keyword">null</span>) &#123;</span><br><span class="line">                <span class="keyword">if</span> (!ProxyAccessHelper.allowNullLoader) &#123;</span><br><span class="line">                    <span class="comment">//如果传入的ClassLoader是null，则要检查"getClassLoader"权限</span></span><br><span class="line">                    sm.checkPermission(SecurityConstants.GET_CLASSLOADER_PERMISSION);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">/*</span></span><br><span class="line"><span class="comment">            如果接口列表中有一个接口不是public的，那么代理类应该由该接口的ClassLoader加载定义，如果caller的ClassLoader和接口的ClassLoader不相同，那么虚拟机将在</span></span><br><span class="line"><span class="comment">            生成代理类的defineClass0方法(参见java虚拟机类加载机制)中抛出IllegalAccessError</span></span><br><span class="line"><span class="comment">            */</span></span><br><span class="line">            ReflectUtil.checkProxyPackageAccess(ccl, interfaces);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>Proxy.getProxyClass0函数分析</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">该函数作用是返回代理类的Class对象，在调用这个方法之前必须要调用checkProxyAccess方法来检查相应的权限</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> Class&lt;?&gt; getProxyClass0(ClassLoader loader,</span><br><span class="line">                                           Class&lt;?&gt;... interfaces) &#123;</span><br><span class="line">        <span class="keyword">if</span> (interfaces.length &gt; <span class="number">65535</span>) &#123; <span class="comment">//接口列表大小的限制</span></span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException(<span class="string">"interface limit exceeded"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">//如果通过指定的loader定义实现有序接口列表的代理类已经存在于缓存，那么返回缓存中的拷贝，否则通过ProxyClassFactory创建代理类</span></span><br><span class="line">        <span class="keyword">return</span> proxyClassCache.get(loader, interfaces);</span><br><span class="line">    &#125;    </span><br></pre></td></tr></table></figure>
+<p>接下来就是代理类从缓存中获取代理类，jdk1.7中的缓存机制略显复杂，没有去深入研究，后期如有可能再补上跳过如下流程代码分析</p>
+<ul>
+<li>通过WeakCache的get方法获得代理类的Class对象</li>
+<li>删除无效缓存，弱key和强subkey的缓存等（略过…）</li>
+<li>通过WeakCache的内部类Factory的get方法调用Proxy.ProxyClassFactory的apply方法得到代理类的Class对象</li>
+</ul>
+<p>ProxyClassFactory分析</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">ProxyClassFactory</span></span></span><br><span class="line">        implements BiFunction&lt;ClassLoader, Class&lt;?&gt;[], Class&lt;?&gt;&gt; &#123;</span><br><span class="line">        <span class="comment">// 所有代理类的前缀</span></span><br><span class="line">        <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String proxyClassNamePrefix = <span class="string">"$Proxy"</span>;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 生成代理类名称下一个唯一的编号，如$ProxyN</span></span><br><span class="line">        <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> AtomicLong nextUniqueNumber = <span class="keyword">new</span> AtomicLong();</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="keyword">public</span> Class&lt;?&gt; apply(ClassLoader loader, Class&lt;?&gt;[] interfaces) &#123;</span><br><span class="line"></span><br><span class="line">            Map&lt;Class&lt;?&gt;, Boolean&gt; interfaceSet = <span class="keyword">new</span> IdentityHashMap&lt;&gt;(interfaces.length);</span><br><span class="line">            <span class="keyword">for</span> (Class&lt;?&gt; intf : interfaces) &#123;</span><br><span class="line">                <span class="comment">/*</span></span><br><span class="line"><span class="comment">                 * 校验代理接口对指定的ClassLoader是否可见，不可见抛出异常</span></span><br><span class="line"><span class="comment">                 */</span></span><br><span class="line">                Class&lt;?&gt; interfaceClass = <span class="keyword">null</span>;</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    interfaceClass = Class.forName(intf.getName(), <span class="keyword">false</span>, loader);</span><br><span class="line">                &#125; <span class="keyword">catch</span> (ClassNotFoundException e) &#123;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">if</span> (interfaceClass != intf) &#123;</span><br><span class="line">                    <span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException(</span><br><span class="line">                        intf + <span class="string">" is not visible from class loader"</span>);</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="comment">/*</span></span><br><span class="line"><span class="comment">                 * 校验interface Class是否是接口，不是则抛出异常.</span></span><br><span class="line"><span class="comment">                 */</span></span><br><span class="line">                <span class="keyword">if</span> (!interfaceClass.isInterface()) &#123;</span><br><span class="line">                    <span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException(</span><br><span class="line">                        interfaceClass.getName() + <span class="string">" is not an interface"</span>);</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="comment">/*</span></span><br><span class="line"><span class="comment">                 * 校验接口类是否重复，如果重复则抛出异常.</span></span><br><span class="line"><span class="comment">                 */</span></span><br><span class="line">                <span class="keyword">if</span> (interfaceSet.put(interfaceClass, Boolean.TRUE) != <span class="keyword">null</span>) &#123;</span><br><span class="line">                    <span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException(</span><br><span class="line">                        <span class="string">"repeated interface: "</span> + interfaceClass.getName());</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            String proxyPkg = <span class="keyword">null</span>;     <span class="comment">// 声明代理类的包名</span></span><br><span class="line"></span><br><span class="line">            <span class="comment">/*</span></span><br><span class="line"><span class="comment">             * 记录是否所有的非public接口是否在相同的包下，如果是则代理类的包名是非public接口的包名，否则抛出异常.</span></span><br><span class="line"><span class="comment">             */</span></span><br><span class="line">            <span class="keyword">for</span> (Class&lt;?&gt; intf : interfaces) &#123;</span><br><span class="line">                <span class="keyword">int</span> flags = intf.getModifiers();</span><br><span class="line">                <span class="keyword">if</span> (!Modifier.isPublic(flags)) &#123;</span><br><span class="line">                    String name = intf.getName();</span><br><span class="line">                    <span class="keyword">int</span> n = name.lastIndexOf(<span class="string">'.'</span>);</span><br><span class="line">                    String pkg = ((n == -<span class="number">1</span>) ? <span class="string">""</span> : name.substring(<span class="number">0</span>, n + <span class="number">1</span>));</span><br><span class="line">                    <span class="keyword">if</span> (proxyPkg == <span class="keyword">null</span>) &#123;</span><br><span class="line">                        proxyPkg = pkg;</span><br><span class="line">                    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (!pkg.equals(proxyPkg)) &#123;</span><br><span class="line">                        <span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException(</span><br><span class="line">                            <span class="string">"non-public interfaces from different packages"</span>);</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (proxyPkg == <span class="keyword">null</span>) &#123;</span><br><span class="line">                <span class="comment">// 如果没有非public的代理接口，包名就用com.sun.proxy</span></span><br><span class="line">                proxyPkg = ReflectUtil.PROXY_PACKAGE + <span class="string">"."</span>;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="comment">/*</span></span><br><span class="line"><span class="comment">             * 生成选定的代理类名称,如$ProxyN.</span></span><br><span class="line"><span class="comment">             */</span></span><br><span class="line">            <span class="keyword">long</span> num = nextUniqueNumber.getAndIncrement();</span><br><span class="line">            String proxyName = proxyPkg + proxyClassNamePrefix + num;</span><br><span class="line"></span><br><span class="line">            <span class="comment">/*</span></span><br><span class="line"><span class="comment">             *通过ProxyGenerator类生成指定的代理类字节数组.</span></span><br><span class="line"><span class="comment">             */</span></span><br><span class="line">            <span class="keyword">byte</span>[] proxyClassFile = ProxyGenerator.generateProxyClass(</span><br><span class="line">                proxyName, interfaces);</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="comment">//通过指定ClassLoader生成代理类的Class对象</span></span><br><span class="line">                <span class="keyword">return</span> defineClass0(loader, proxyName,</span><br><span class="line">                                    proxyClassFile, <span class="number">0</span>, proxyClassFile.length);</span><br><span class="line">            &#125; <span class="keyword">catch</span> (ClassFormatError e) &#123;</span><br><span class="line">                <span class="comment">/*</span></span><br><span class="line"><span class="comment">                 * 一些其他参数方面影响了代理类的创建异常.</span></span><br><span class="line"><span class="comment">                 */</span></span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException(e.toString());</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>至此，动态代理的Class对象生成进入结尾，Proxy的isProxyClass方法和getInvocationHandler方法就比较清晰明显了，请读者自行分析.</p>
+<h1 id="动态代理类生成"><a href="#动态代理类生成" class="headerlink" title="动态代理类生成"></a>动态代理类生成</h1><p>事物往往不像其看起来的复杂，需要的是我们能够化繁为简，这样也许就能有更多拨云见日的机会.</p>
+<p>代理类中方法调用的分派转发推演实现</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">Proxy</span>$0 <span class="keyword">extends</span> <span class="title">java</span>.<span class="title">lang</span>.<span class="title">reflect</span>.<span class="title">Proxy</span> <span class="keyword">implements</span> <span class="title">com</span>.<span class="title">thinkdevos</span>.<span class="title">java</span>.<span class="title">dynamicproxy</span>.<span class="title">Subject</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> Method m0; <span class="comment">//为了代理调用高效，这里缓存了接口方法的实例</span></span><br><span class="line">    .....</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> Method mN; <span class="comment">//同上还需要缓存hashCode,toString,equals方法实例</span></span><br><span class="line">    ....</span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> &#123;<span class="comment">//给静态变量mN赋值</span></span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            Class&lt;?&gt; subClass = Class.forName(<span class="string">"com.thinkdevos.java.dynamicproxy.Subject"</span>);</span><br><span class="line">            Method m0 = subClass.getMethod(<span class="string">"doSomething"</span>);</span><br><span class="line">            ....</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">            ...</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> Proxy$<span class="number">0</span>(java.lang.reflect.InvocationHandler handler) &#123;</span><br><span class="line">        <span class="keyword">super</span>(handler);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">void</span> <span class="title">doSomething</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="comment">//通过调用处理器调用</span></span><br><span class="line">            handler.invode(<span class="keyword">this</span>, mN, <span class="keyword">new</span> Object[] &#123;...&#125;);</span><br><span class="line">        &#125; <span class="keyword">catch</span>(Exception e) &#123;</span><br><span class="line">            ....</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">int</span> <span class="title">hashCode</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            handler.invode(<span class="keyword">this</span>, mN, <span class="keyword">new</span> Object[] &#123;...&#125;);</span><br><span class="line">        &#125; <span class="keyword">catch</span>(Exception e) &#123;</span><br><span class="line">            ....</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>用调用处理器调用方法时，在捕获方法本身抛出的异常后，还有可能有未知异常抛出，对于不支持的异常，必须抛 UndeclaredThrowableException 运行时异常.</p>
+<p>代理类中方法调用的分派转发推演实现</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">void</span> <span class="title">doSomething</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="comment">//通过调用处理器调用</span></span><br><span class="line">        handler.invode(<span class="keyword">this</span>, mN, <span class="keyword">new</span> Object[] &#123;...&#125;);</span><br><span class="line">    &#125; <span class="keyword">catch</span>(Exception e) &#123;</span><br><span class="line">        ....</span><br><span class="line">    &#125; <span class="keyword">catch</span>(Throwable thr) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> UndeclaredThrowableException(e);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这样我们就完成了对动态代理类的推演实现。<br>下面我们就实例验证一番，通过如下代码生成字节码文件<br><strong>工具类：</strong> 通过ProxyGenerator.generateProxyClass生成代理类字节数组并保存到文件中  </p>
+<figure class="highlight java"><figcaption><span>ProxyUtils.java</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ProxyUtils</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Save proxy class to path</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> path           path to save proxy class</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> proxyClassName name of proxy class</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> interfaces     interfaces of proxy class</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span></span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">boolean</span> <span class="title">saveProxyClass</span><span class="params">(String path, String proxyClassName, Class[] interfaces)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (proxyClassName == <span class="keyword">null</span> || path == <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// get byte of proxy class</span></span><br><span class="line">        <span class="keyword">byte</span>[] classFile = ProxyGenerator.generateProxyClass(proxyClassName, interfaces);</span><br><span class="line">        FileOutputStream out = <span class="keyword">null</span>;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            out = <span class="keyword">new</span> FileOutputStream(path);</span><br><span class="line">            out.write(classFile);</span><br><span class="line">            out.flush();</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                out.close();</span><br><span class="line">            &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">                e.printStackTrace();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>运行生成Proxy$0.class</p>
+<figure class="highlight java"><figcaption><span>ProxyClass.java</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ProxyClass</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        ProxyUtils.saveProxyClass(<span class="string">"/home/borney/tmp/Proxy$0.class"</span>, <span class="string">"Proxy$0"</span>,</span><br><span class="line">            <span class="keyword">new</span> Class&lt;?&gt;[]&#123;Subject.class&#125;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>通过 <strong>javap -p Proxy$0</strong> 查看字节码文件基本信息</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">Proxy</span>$0 <span class="keyword">extends</span> <span class="title">java</span>.<span class="title">lang</span>.<span class="title">reflect</span>.<span class="title">Proxy</span> <span class="keyword">implements</span> <span class="title">com</span>.<span class="title">thinkdevos</span>.<span class="title">java</span>.<span class="title">dynamicproxy</span>.<span class="title">Subject</span> </span>&#123;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">static</span> java.lang.reflect.Method m1;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">static</span> java.lang.reflect.Method m0;</span><br><span class="line">  ...</span><br><span class="line">  <span class="keyword">public</span> Proxy$<span class="number">0</span>(java.lang.reflect.InvocationHandler) <span class="keyword">throws</span> ;</span><br><span class="line">  ...</span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">int</span> <span class="title">hashCode</span><span class="params">()</span> <span class="keyword">throws</span> </span>;</span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">void</span> <span class="title">doSomething</span><span class="params">()</span> <span class="keyword">throws</span> </span>;</span><br><span class="line">  ...</span><br><span class="line">  <span class="keyword">static</span> &#123;&#125; <span class="keyword">throws</span> ;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>通过 <strong>javap -v Proxy$0</strong> 查看详细信息，我们主要看下调用处理器对doSomething调用和异常捕获处理(注释是自己加的，字节码文件中没有注释)</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">void</span> <span class="title">doSomething</span><span class="params">()</span> <span class="keyword">throws</span> </span>;</span><br><span class="line">    descriptor: ()V</span><br><span class="line">    flags: ACC_PUBLIC, ACC_FINAL</span><br><span class="line">    Code:</span><br><span class="line">      stack=<span class="number">10</span>, locals=<span class="number">2</span>, args_size=<span class="number">1</span></span><br><span class="line">         <span class="number">0</span>: aload_0</span><br><span class="line">         1: getfield      #16                 // Field java/lang/reflect/Proxy.h:Ljava/lang/reflect/InvocationHandler;</span><br><span class="line">         <span class="number">4</span>: aload_0</span><br><span class="line">         5: getstatic     #60                 // Field m3:Ljava/lang/reflect/Method;</span><br><span class="line">         <span class="number">8</span>: aconst_null</span><br><span class="line">         <span class="comment">/*</span></span><br><span class="line"><span class="comment">         通过调用处理器调用方法</span></span><br><span class="line"><span class="comment">         */</span></span><br><span class="line">         9: invokeinterface #28,  4           // InterfaceMethod java/lang/reflect/InvocationHandler.invoke:(Ljava/lang/Object;Ljava/lang/reflect/Method;[Ljava/lang/Object;)Ljava/lang/Object;</span><br><span class="line">        <span class="number">14</span>: pop</span><br><span class="line">        <span class="number">15</span>: <span class="keyword">return</span></span><br><span class="line">        <span class="number">16</span>: athrow</span><br><span class="line">        <span class="number">17</span>: astore_1</span><br><span class="line">        <span class="comment">/*</span></span><br><span class="line"><span class="comment">        抛出UndeclaredThrowableException异常</span></span><br><span class="line"><span class="comment">        */</span></span><br><span class="line">        18: new           #42                 // class java/lang/reflect/UndeclaredThrowableException</span><br><span class="line">        <span class="number">21</span>: dup</span><br><span class="line">        <span class="number">22</span>: aload_1</span><br><span class="line">        23: invokespecial #45                 // Method java/lang/reflect/UndeclaredThrowableException."&lt;init&gt;":(Ljava/lang/Throwable;)V</span><br><span class="line">        <span class="number">26</span>: athrow</span><br><span class="line">      Exception table:</span><br><span class="line">         from    to  target type</span><br><span class="line">             <span class="number">0</span>    <span class="number">16</span>    <span class="number">16</span>   Class java/lang/Error</span><br><span class="line">             <span class="number">0</span>    <span class="number">16</span>    <span class="number">16</span>   Class java/lang/RuntimeException</span><br><span class="line">             <span class="number">0</span>    <span class="number">16</span>    <span class="number">17</span>   Class java/lang/Throwable</span><br><span class="line">    Exceptions:</span><br><span class="line">      <span class="keyword">throws</span></span><br></pre></td></tr></table></figure>
+<h1 id="动态代理的不足之处"><a href="#动态代理的不足之处" class="headerlink" title="动态代理的不足之处"></a>动态代理的不足之处</h1><p>动态代理只能支持接口的代理，这也是因为java的继承性本质所限制的，因为所有的动态代理类都继承了Proxy类，所以再也无法同时继承其他类.然而，我们不可否认动态代理设计的伟大之处，世上所有的事物都不可能完美.</p>
+<p>后感：第一次写东西，东拼西凑的看了看，再加上自己的理解，希望能对大家有所帮助,并欢迎指正.<br>本文<a href="https://github.com/borneywpf/java-demos/tree/master/java/src/com/thinkdevos/java/dynamicproxy" target="_blank" rel="noopener">[示例代码]</a></p>
+<hr>
+<p>参考资料</p>
+<p><a href="https://www.ibm.com/developerworks/cn/java/j-lo-proxy1/" target="_blank" rel="noopener">Java 动态代理机制分析及扩展，第 1 部分</a><br><a href="http://a.codekk.com/detail/Android/Caij/%E5%85%AC%E5%85%B1%E6%8A%80%E6%9C%AF%E7%82%B9%E4%B9%8B%20Java%20%E5%8A%A8%E6%80%81%E4%BB%A3%E7%90%86" target="_blank" rel="noopener">公共技术点之 Java 动态代理</a><br><!--[Java 动态代理机制分析及扩展，第 2 部分](https://www.ibm.com/developerworks/cn/java/j-lo-proxy2/)--></p>
+
+      
+    </div>
+    
+    
+    
+    
+    <div>    
+ 
+ 
+    <ul class="post-copyright">
+      <li class="post-copyright-author">
+          <strong>本文作者：</strong>Borney
+      </li>
+      <li class="post-copyright-link">
+        <strong>本文链接：</strong>
+        <a href="/2017/09/22/2017-09-22/" title="java之动态代理">2017/09/22/2017-09-22/</a>
+      </li>
+      <li class="post-copyright-license">
+        <strong>版权声明： </strong>
+        本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0 CN</a> 许可协议。转载请注明出处！
+      </li>
+    </ul>
+  
+</div>
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/java/" rel="tag"># java</a>
+          
+            <a href="/tags/动态代理/" rel="tag"># 动态代理</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/09/21/my-exvim/" rel="next" title="基于exvim搭建Linux下查看Android源码的IDE">
+                <i class="fa fa-chevron-left"></i> 基于exvim搭建Linux下查看Android源码的IDE
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/09/29/2017-9-29-selecttab/" rel="prev" title="Android自定义控件之TabSelectorLayout(微信tab)">
+                Android自定义控件之TabSelectorLayout(微信tab) <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div id="uyan_frame"></div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          
+            <p class="site-author-name" itemprop="name">Borney</p>
+            <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+            
+              <a href="/archives/">
+            
+                <span class="site-state-item-count">14</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-categories">
+              <a href="/categories/index.html">
+                <span class="site-state-item-count">6</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/tags/index.html">
+                <span class="site-state-item-count">26</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/borneywpf" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>GitHub</a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#java中的代理"><span class="nav-number">1.</span> <span class="nav-text">java中的代理</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#静态代理"><span class="nav-number">1.1.</span> <span class="nav-text">静态代理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#动态代理"><span class="nav-number">1.2.</span> <span class="nav-text">动态代理</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#动态代理类的属性"><span class="nav-number">2.</span> <span class="nav-text">动态代理类的属性</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#动态代理实例的属性"><span class="nav-number">3.</span> <span class="nav-text">动态代理实例的属性</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#获取动态代理类时需要注意哪些？"><span class="nav-number">4.</span> <span class="nav-text">获取动态代理类时需要注意哪些？</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#从源码中理解动态代理类的生成"><span class="nav-number">5.</span> <span class="nav-text">从源码中理解动态代理类的生成</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#动态代理类生成"><span class="nav-number">6.</span> <span class="nav-text">动态代理类生成</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#动态代理的不足之处"><span class="nav-number">7.</span> <span class="nav-text">动态代理的不足之处</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Borney</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+  <span class="post-meta-divider">|</span>
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.2</div>
+
+
+        
+
+
+
+
+  <script type="text/javascript">
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//tajs.qq.com/stats?sId=63720031";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.2"></script>
+
+
+
+  
+  
+
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.2"></script>
+
+
+  
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+    
+
+    
+      <!-- UY BEGIN -->
+      <script type="text/javascript" src="http://v2.uyan.cc/code/uyan.js?uid=2145075"></script>
+      <!-- UY END -->
+    
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("87F3QvzSkjwM9WpKLPGupbUk-gzGzoHsz", "GW1l2J4GFXAc2AAqPQfPNYLy");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

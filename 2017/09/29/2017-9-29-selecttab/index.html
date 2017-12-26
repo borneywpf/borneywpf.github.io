@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.2" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="android,自定义控件,tab," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.2" />
+
+
+
+
+
+
+<meta name="description" content="老规矩，先看效果图！！！ 概述天天使用微信，作为一个android developer，当然会对微信的底部tab感兴趣，刚好工作中要开发一个bbs客户端，gui也要求实现一个类似微信底部tab效果的控件，开始在网上狂搜一通，也找到了类似的东西(至于是哪位大神的，我已经忘了连接，这里就不详述了)，进过自己进一步的封装，自">
+<meta name="keywords" content="android,自定义控件,tab">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android自定义控件之TabSelectorLayout(微信tab)">
+<meta property="og:url" content="http://thinkdevos.net/2017/09/29/2017-9-29-selecttab/index.html">
+<meta property="og:site_name" content="Borney的博客">
+<meta property="og:description" content="老规矩，先看效果图！！！ 概述天天使用微信，作为一个android developer，当然会对微信的底部tab感兴趣，刚好工作中要开发一个bbs客户端，gui也要求实现一个类似微信底部tab效果的控件，开始在网上狂搜一通，也找到了类似的东西(至于是哪位大神的，我已经忘了连接，这里就不详述了)，进过自己进一步的封装，自认为完美的实现了gui的设计需求，然而现在在回想实现的细节，却很难想起其中的关键">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://thinkdevos.net/2017/09/29/2017-9-29-selecttab/tabselectorlayout.gif">
+<meta property="og:updated_time" content="2017-12-05T02:02:20.852Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android自定义控件之TabSelectorLayout(微信tab)">
+<meta name="twitter:description" content="老规矩，先看效果图！！！ 概述天天使用微信，作为一个android developer，当然会对微信的底部tab感兴趣，刚好工作中要开发一个bbs客户端，gui也要求实现一个类似微信底部tab效果的控件，开始在网上狂搜一通，也找到了类似的东西(至于是哪位大神的，我已经忘了连接，这里就不详述了)，进过自己进一步的封装，自认为完美的实现了gui的设计需求，然而现在在回想实现的细节，却很难想起其中的关键">
+<meta name="twitter:image" content="http://thinkdevos.net/2017/09/29/2017-9-29-selecttab/tabselectorlayout.gif">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.2',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://thinkdevos.net/2017/09/29/2017-9-29-selecttab/"/>
+
+
+
+
+
+  <title>Android自定义控件之TabSelectorLayout(微信tab) | Borney的博客</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Borney的博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://thinkdevos.net/2017/09/29/2017-9-29-selecttab/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Borney">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Borney的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Android自定义控件之TabSelectorLayout(微信tab)</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-09-29T10:09:21+08:00">
+                2017-09-29
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/android/" itemprop="url" rel="index">
+                    <span itemprop="name">android</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+             <span id="/2017/09/29/2017-9-29-selecttab/" class="leancloud_visitors" data-flag-title="Android自定义控件之TabSelectorLayout(微信tab)">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+      
+      
+
+      
+        <p>老规矩，先看效果图！！！<br><img src="/2017/09/29/2017-9-29-selecttab/tabselectorlayout.gif" title="效果图"></p>
+<h1 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h1><p>天天使用微信，作为一个android developer，当然会对微信的底部tab感兴趣，刚好工作中要开发一个bbs客户端，gui也要求实现一个类似微信底部tab效果的控件，<br>开始在网上狂搜一通，也找到了类似的东西(至于是哪位大神的，我已经忘了连接，这里就不详述了)，进过自己进一步的封装，自认为完美的实现了gui的设计需求，<br>然而现在在回想实现的细节，却很难想起其中的关键点，于是乎，决定自己重新写一个，加深自定义ViewGroup和自定义View<br>该控件的技术难点：</p>
+<blockquote>
+<p>如果通过监听ViewPager的滑动来实现Tab切换的渐变效果</p>
+</blockquote>
+<p>当然对我来说自己重新实现就不止上述一个难点了，下面就让我们还是从源代码中逐步分析如何实现自定义的TabSelectorLayout</p>
+<h1 id="实现过程"><a href="#实现过程" class="headerlink" title="实现过程"></a>实现过程</h1><h2 id="上述技术难点如何解决"><a href="#上述技术难点如何解决" class="headerlink" title="上述技术难点如何解决"></a>上述技术难点如何解决</h2><p>对于Tab，显示状态只有两个，一个select，一个normal，大家仔细观察微信的渐变效果，其实就是在滑动page的时候，选择的item就是select状态逐渐显示，<br>而normal状态逐渐消失，而失去select状态的item，与之相反；那么我们就可以通过控制两个状态的drawable的alpha值(状态之间属于”补集”)来实现状态切换<br>的渐变效果</p>
+<h2 id="定义View的属性"><a href="#定义View的属性" class="headerlink" title="定义View的属性"></a>定义View的属性</h2><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">declare-styleable</span> <span class="attr">name</span>=<span class="string">"TabSelectorLayout"</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">attr</span> <span class="attr">name</span>=<span class="string">"drawablePadding"</span> <span class="attr">format</span>=<span class="string">"dimension"</span>/&gt;</span> <span class="comment">&lt;!-- drawable和text之间的距离 --&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">attr</span> <span class="attr">name</span>=<span class="string">"normalTextColor"</span> <span class="attr">format</span>=<span class="string">"color"</span>/&gt;</span> <span class="comment">&lt;!-- 自然状态下文字颜色 --&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">attr</span> <span class="attr">name</span>=<span class="string">"selectTextColor"</span> <span class="attr">format</span>=<span class="string">"color"</span>/&gt;</span> <span class="comment">&lt;!-- 选中状态下文字颜色 --&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">attr</span> <span class="attr">name</span>=<span class="string">"android:textSize"</span>/&gt;</span> <span class="comment">&lt;!-- 文字大小 --&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">declare-styleable</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h2 id="定义Tab属性类"><a href="#定义Tab属性类" class="headerlink" title="定义Tab属性类"></a>定义Tab属性类</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">Tab</span> </span>&#123; <span class="comment">//TabSelectorLayout嵌套类</span></span><br><span class="line">        Drawable normalDrawable; <span class="comment">//自然状态图片</span></span><br><span class="line">        Drawable selectDrawable; <span class="comment">//选中状态的图片</span></span><br><span class="line">        String title; <span class="comment">//文字</span></span><br><span class="line">        <span class="keyword">int</span> position; <span class="comment">//tab的位置</span></span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">private</span> <span class="title">Tab</span><span class="params">()</span> </span>&#123; <span class="comment">// TabSelectorLayout外部无法创建该类的对象</span></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="function">Tab <span class="title">setPosition</span><span class="params">(<span class="keyword">int</span> position)</span> </span>&#123; <span class="comment">//TabSelectorLayout外部无法访问该方法</span></span><br><span class="line">            <span class="keyword">this</span>.position = position;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">this</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">getPosition</span><span class="params">()</span> </span>&#123;</span><br><span class="line">            <span class="keyword">return</span> position;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">public</span> Tab <span class="title">setTitle</span><span class="params">(String title)</span> </span>&#123;</span><br><span class="line">            <span class="keyword">this</span>.title = title;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">this</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">public</span> Tab <span class="title">setNormalDrawable</span><span class="params">(Drawable d)</span> </span>&#123;</span><br><span class="line">            normalDrawable = d;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">this</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">public</span> Tab <span class="title">setSelectDrawable</span><span class="params">(Drawable d)</span> </span>&#123;</span><br><span class="line">            selectDrawable = d;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">this</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<h2 id="TabSelectorLayout的属性"><a href="#TabSelectorLayout的属性" class="headerlink" title="TabSelectorLayout的属性"></a>TabSelectorLayout的属性</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> ViewPager viewPager; <span class="comment">//和关联的ViewPager</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">int</span> textSize = <span class="number">12</span>; <span class="comment">//文字大小</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">int</span> drawablePadding = <span class="number">10</span>; <span class="comment">//drawable和文字之间的距离</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">int</span> normalTextColor, selectTextColor; <span class="comment">//文字两种状态的颜色值</span></span><br></pre></td></tr></table></figure>
+<h2 id="构造方法-解析xml属性"><a href="#构造方法-解析xml属性" class="headerlink" title="构造方法(解析xml属性)"></a>构造方法(解析xml属性)</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">TabSelectorLayout</span><span class="params">(Context context)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>(context);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">TabSelectorLayout</span><span class="params">(Context context, AttributeSet attrs)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>(context, attrs, <span class="number">0</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">TabSelectorLayout</span><span class="params">(Context context, AttributeSet attrs, <span class="keyword">int</span> defStyleAttr)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>(context, attrs, defStyleAttr);</span><br><span class="line">        TypedArray array = <span class="keyword">null</span>;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            array = getContext().getTheme().obtainStyledAttributes(attrs, R.styleable.TabSelectorLayout, defStyleAttr, <span class="number">0</span>);</span><br><span class="line">            <span class="keyword">int</span> count = array.getIndexCount();</span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; count; i++) &#123;</span><br><span class="line">                <span class="keyword">final</span> <span class="keyword">int</span> index = array.getIndex(i);</span><br><span class="line">                <span class="keyword">if</span> (index == R.styleable.TabSelectorLayout_normalTextColor) &#123;</span><br><span class="line">                    normalTextColor = array.getColor(index, Color.BLACK);</span><br><span class="line">                &#125; <span class="keyword">else</span> <span class="keyword">if</span> (index == R.styleable.TabSelectorLayout_selectTextColor) &#123;</span><br><span class="line">                    selectTextColor = array.getColor(index, Color.BLACK);</span><br><span class="line">                &#125; <span class="keyword">else</span> <span class="keyword">if</span> (index == R.styleable.TabSelectorLayout_drawablePadding) &#123;</span><br><span class="line">                    drawablePadding = array.getDimensionPixelSize(index, <span class="number">10</span>);</span><br><span class="line">                &#125; <span class="keyword">else</span> <span class="keyword">if</span> (index == R.styleable.TabSelectorLayout_android_textSize) &#123;</span><br><span class="line">                    textSize = array.getDimensionPixelSize(index,</span><br><span class="line">                            (<span class="keyword">int</span>) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, textSize, getResources().getDisplayMetrics()));</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            Log.d(TAG, <span class="string">"normalTextColor = "</span> + normalTextColor + <span class="string">" drawablePadding = "</span> + drawablePadding + <span class="string">" textSize = "</span> + textSize);</span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (array != <span class="keyword">null</span>) &#123;</span><br><span class="line">                array.recycle();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<h2 id="提供获得Tab对象的方法"><a href="#提供获得Tab对象的方法" class="headerlink" title="提供获得Tab对象的方法"></a>提供获得Tab对象的方法</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Tab <span class="title">newTab</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> Tab();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="将初始化好的Tab添加到TabSelectorLayout中"><a href="#将初始化好的Tab添加到TabSelectorLayout中" class="headerlink" title="将初始化好的Tab添加到TabSelectorLayout中"></a>将初始化好的Tab添加到TabSelectorLayout中</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">addTab</span><span class="params">(<span class="keyword">final</span> Tab tab)</span> </span>&#123; <span class="comment">//返回添加tab的posion</span></span><br><span class="line">        <span class="comment">//参数判断</span></span><br><span class="line">        <span class="keyword">if</span> (tab == <span class="keyword">null</span>) &#123; </span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> NullPointerException(<span class="string">"tab is null"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (tab.title == <span class="keyword">null</span> || tab.selectDrawable == <span class="keyword">null</span> || tab.normalDrawable == <span class="keyword">null</span>) &#123; </span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException(<span class="string">"some argument is null"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">final</span> TabView tabView = <span class="keyword">new</span> TabView(getContext()); <span class="comment">//new 出显示的TabView</span></span><br><span class="line">        tabView.attach(tab); <span class="comment">//关联tab到TabView中</span></span><br><span class="line">        tabView.setOnClickListener(<span class="keyword">new</span> OnClickListener() &#123; <span class="comment">//tab的click监听，切换ViewPager的显示</span></span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onClick</span><span class="params">(View v)</span> </span>&#123;</span><br><span class="line">                viewPager.setCurrentItem(tab.getPosition(), <span class="keyword">false</span>); <span class="comment">//切换不滚动</span></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">        addView(tabView, <span class="keyword">new</span> LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));</span><br><span class="line">        tab.setPosition(indexOfChild(tabView)); <span class="comment">//设置tab的position</span></span><br><span class="line">        <span class="keyword">return</span> tab.position;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<h2 id="重写addView对添加的child做以下限制"><a href="#重写addView对添加的child做以下限制" class="headerlink" title="重写addView对添加的child做以下限制"></a>重写addView对添加的child做以下限制</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">addView</span><span class="params">(View child, <span class="keyword">int</span> index, ViewGroup.LayoutParams params)</span> </span>&#123; <span class="comment">//只能添加TabView</span></span><br><span class="line">        <span class="keyword">if</span> (child <span class="keyword">instanceof</span> TabView) &#123;</span><br><span class="line">            <span class="keyword">super</span>.addView(child, index, params);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException(<span class="string">"child is not TabView"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<h2 id="关联ViewPager"><a href="#关联ViewPager" class="headerlink" title="关联ViewPager"></a>关联ViewPager</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">bindViewPager</span><span class="params">(ViewPager pager)</span> </span>&#123;</span><br><span class="line">    <span class="comment">//参数处理</span></span><br><span class="line">    <span class="keyword">if</span> (pager == <span class="keyword">null</span>)</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> NullPointerException(<span class="string">"pager is null"</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (viewPager == pager)</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (viewPager != <span class="keyword">null</span>)  <span class="comment">//remove对上个ViewPager的监听</span></span><br><span class="line">        viewPager.removeOnPageChangeListener(pageChangeListener);</span><br><span class="line">    <span class="comment">//ViewPager的Adapter数据判读</span></span><br><span class="line">    PagerAdapter adapter = pager.getAdapter();</span><br><span class="line">    <span class="keyword">if</span> (adapter == <span class="keyword">null</span>)</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException(<span class="string">"pager not set adapter"</span>);</span><br><span class="line">    <span class="keyword">if</span> (adapter.getCount() != getChildCount())</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException(<span class="string">"pager count is not equeals tab count"</span>);</span><br><span class="line"></span><br><span class="line">    pager.addOnPageChangeListener(pageChangeListener); <span class="comment">//添加OnPageChangeListener</span></span><br><span class="line"></span><br><span class="line">    viewPager = pager;</span><br><span class="line"></span><br><span class="line">    setCurrentItem(viewPager.getCurrentItem()); <span class="comment">//设置显示的Tab</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="OnPageChangeListener的实现，给TabView传入ViewPager滑动变化数据"><a href="#OnPageChangeListener的实现，给TabView传入ViewPager滑动变化数据" class="headerlink" title="OnPageChangeListener的实现，给TabView传入ViewPager滑动变化数据"></a>OnPageChangeListener的实现，给TabView传入ViewPager滑动变化数据</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> ViewPager.OnPageChangeListener pageChangeListener = <span class="keyword">new</span> ViewPager.SimpleOnPageChangeListener() &#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onPageScrolled</span><span class="params">(<span class="keyword">int</span> position, <span class="keyword">float</span> positionOffset, <span class="keyword">int</span> positionOffsetPixels)</span> </span>&#123;</span><br><span class="line">            TabView cur = (TabView) getChildAt(position);</span><br><span class="line">            <span class="keyword">if</span> (positionOffset &gt; <span class="number">0</span>) &#123;</span><br><span class="line">                cur.setTabOffSet(<span class="number">1</span> - positionOffset);</span><br><span class="line">                TabView next = (TabView) getChildAt(position + <span class="number">1</span>);</span><br><span class="line">                next.setTabOffSet(positionOffset);</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                cur.setTabOffSet(<span class="number">1</span> - positionOffset);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onPageSelected</span><span class="params">(<span class="keyword">int</span> position)</span> </span>&#123;</span><br><span class="line">            setCurrentItem(position);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;;</span><br></pre></td></tr></table></figure>
+<h2 id="切换Tab方法"><a href="#切换Tab方法" class="headerlink" title="切换Tab方法"></a>切换Tab方法</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setCurrentItem</span><span class="params">(<span class="keyword">int</span> item)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">int</span> count = getChildCount();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; count; i++) &#123;</span><br><span class="line">            TabView child = (TabView) getChildAt(i);</span><br><span class="line">            child.setSelected(item == i); <span class="comment">//修改TabView的选中状态</span></span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="万年不变的onMeasure方法"><a href="#万年不变的onMeasure方法" class="headerlink" title="万年不变的onMeasure方法"></a>万年不变的onMeasure方法</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onMeasure</span><span class="params">(<span class="keyword">int</span> widthMeasureSpec, <span class="keyword">int</span> heightMeasureSpec)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">int</span> width = MeasureSpec.getSize(widthMeasureSpec);</span><br><span class="line">        <span class="keyword">int</span> height = MeasureSpec.getSize(heightMeasureSpec);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">int</span> count = getChildCount();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">int</span> childWidth = (width - getPaddingLeft() - getPaddingRight()) / count; <span class="comment">//每个child的宽度一样</span></span><br><span class="line">        <span class="keyword">int</span> maxChildHeight = <span class="number">0</span>; <span class="comment">//所有child中最高的值</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; count; i++) &#123;</span><br><span class="line">            <span class="keyword">final</span> View child = getChildAt(i);</span><br><span class="line">            <span class="keyword">if</span> (child.getVisibility() != GONE) &#123;</span><br><span class="line">                <span class="comment">//测量child,精确child的宽度，设定child的最大高度</span></span><br><span class="line">                child.measure(MeasureSpec.makeMeasureSpec(childWidth, MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(height, MeasureSpec.AT_MOST));</span><br><span class="line">                <span class="keyword">int</span> h = child.getMeasuredHeight();</span><br><span class="line">                <span class="keyword">int</span> w = child.getMeasuredWidth();</span><br><span class="line">                maxChildHeight = maxChildHeight &gt; h ? maxChildHeight : h;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">int</span> actionBarHeight = getActionBarHeight(); <span class="comment">//默认Layout的高度是ActionBar的高度</span></span><br><span class="line">        <span class="keyword">int</span> h = actionBarHeight &gt; maxChildHeight ? actionBarHeight : maxChildHeight;</span><br><span class="line"></span><br><span class="line">        setMeasuredDimension(width, h + getPaddingTop() + getPaddingBottom());</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<h2 id="获取actionBar的高度"><a href="#获取actionBar的高度" class="headerlink" title="获取actionBar的高度"></a>获取actionBar的高度</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">int</span> <span class="title">getActionBarHeight</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        TypedValue tv = <span class="keyword">new</span> TypedValue();</span><br><span class="line">        <span class="keyword">if</span> (getContext().getTheme().resolveAttribute(android.R.attr.actionBarSize, tv, <span class="keyword">true</span>))</span><br><span class="line">            <span class="keyword">return</span> TypedValue.complexToDimensionPixelSize(tv.data, getResources().getDisplayMetrics());</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<h2 id="必须实现的onLayout方法"><a href="#必须实现的onLayout方法" class="headerlink" title="必须实现的onLayout方法"></a>必须实现的onLayout方法</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onLayout</span><span class="params">(<span class="keyword">boolean</span> changed, <span class="keyword">int</span> left, <span class="keyword">int</span> top, <span class="keyword">int</span> right, <span class="keyword">int</span> bottom)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">int</span> count = getChildCount();</span><br><span class="line">        <span class="keyword">int</span> lefPos = getPaddingLeft(); <span class="comment">//child的left位置</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">int</span> parentTop = getPaddingTop();</span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">int</span> parentBottom = bottom - top - getPaddingBottom();</span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">int</span> parentHeight = parentBottom - parentTop;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">final</span> Rect childRect = <span class="keyword">new</span> Rect(); <span class="comment">//child的显示矩阵</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; count; i++) &#123;</span><br><span class="line">            <span class="keyword">final</span> View child = getChildAt(i);</span><br><span class="line">            <span class="keyword">if</span> (child.getVisibility() != GONE) &#123;</span><br><span class="line">                <span class="keyword">final</span> LayoutParams lp = (LayoutParams) child.getLayoutParams();</span><br><span class="line"></span><br><span class="line">                <span class="keyword">final</span> <span class="keyword">int</span> width = child.getMeasuredWidth();</span><br><span class="line">                <span class="keyword">final</span> <span class="keyword">int</span> height = child.getMeasuredHeight();</span><br><span class="line"></span><br><span class="line">                lefPos += lp.leftMargin; <span class="comment">//变化下一个child的left</span></span><br><span class="line"></span><br><span class="line">                childRect.left = lefPos;</span><br><span class="line">                childRect.top = (parentHeight - height) / <span class="number">2</span>;</span><br><span class="line">                childRect.bottom = childRect.top + height;</span><br><span class="line">                childRect.right = childRect.left + width;</span><br><span class="line"></span><br><span class="line">                <span class="comment">// Use the child's gravity and size to determine its final</span></span><br><span class="line">                <span class="comment">// frame within its container.</span></span><br><span class="line">                <span class="comment">//Gravity.apply(lp.gravity, width, height, mTmpContainerRect, mTmpChildRect);</span></span><br><span class="line"></span><br><span class="line">                child.layout(childRect.left, childRect.top, childRect.right, childRect.bottom); <span class="comment">//layout child</span></span><br><span class="line"></span><br><span class="line">                lefPos += width; <span class="comment">//变化下一个child的left</span></span><br><span class="line">                lefPos += lp.rightMargin; <span class="comment">//变化下一个child的left</span></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br></pre></td></tr></table></figure>
+<h2 id="定义TabView"><a href="#定义TabView" class="headerlink" title="定义TabView"></a>定义TabView</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="class"><span class="keyword">class</span> <span class="title">TabView</span> <span class="keyword">extends</span> <span class="title">View</span> </span>&#123; <span class="comment">//私有内部类</span></span><br></pre></td></tr></table></figure>
+<h2 id="TabView属性"><a href="#TabView属性" class="headerlink" title="TabView属性"></a>TabView属性</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">int</span> normalAlpha = <span class="number">255</span>;  <span class="comment">//自然状态下的alpha</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">int</span> viewWidth; <span class="comment">//TabView宽度</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">int</span> viewHeight;<span class="comment">//TabView高度</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> Paint textNormalPaint = <span class="keyword">new</span> Paint(Paint.ANTI_ALIAS_FLAG | Paint.SUBPIXEL_TEXT_FLAG); <span class="comment">//自然状态text画笔</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> Paint textSelectPaint = <span class="keyword">new</span> Paint(Paint.ANTI_ALIAS_FLAG | Paint.SUBPIXEL_TEXT_FLAG);<span class="comment">//选中状态text画笔</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> Rect boundText = <span class="keyword">new</span> Rect(); <span class="comment">//text的bound</span></span><br><span class="line"><span class="keyword">private</span> Tab tab; <span class="comment">//关联的tab</span></span><br></pre></td></tr></table></figure>
+<h2 id="TabView属性初始化"><a href="#TabView属性初始化" class="headerlink" title="TabView属性初始化"></a>TabView属性初始化</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">initText</span><span class="params">()</span> </span>&#123;</span><br><span class="line">            textNormalPaint.setColor(normalTextColor);</span><br><span class="line">            textNormalPaint.setTextSize(textSize);</span><br><span class="line"></span><br><span class="line">            textSelectPaint.setColor(selectTextColor);</span><br><span class="line">            textSelectPaint.setTextSize(textSize);</span><br><span class="line">        &#125;</span><br></pre></td></tr></table></figure>
+<h2 id="获得指定字体大小text的显示矩阵"><a href="#获得指定字体大小text的显示矩阵" class="headerlink" title="获得指定字体大小text的显示矩阵"></a>获得指定字体大小text的显示矩阵</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">measureText</span><span class="params">()</span> </span>&#123;</span><br><span class="line">            textNormalPaint.getTextBounds(tab.title, <span class="number">0</span>, tab.title.length(), boundText);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="通过监听到的ViewPager滑动变化来修改显示的alpha"><a href="#通过监听到的ViewPager滑动变化来修改显示的alpha" class="headerlink" title="通过监听到的ViewPager滑动变化来修改显示的alpha"></a>通过监听到的ViewPager滑动变化来修改显示的alpha</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">setTabOffSet</span><span class="params">(<span class="keyword">float</span> offSet)</span> </span>&#123;</span><br><span class="line">            normalAlpha = (<span class="keyword">int</span>) (<span class="number">255</span> - offSet * <span class="number">255</span>);</span><br><span class="line">            invalidate();</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+<h2 id="重新setSelected方法，来修改显示的alpha"><a href="#重新setSelected方法，来修改显示的alpha" class="headerlink" title="重新setSelected方法，来修改显示的alpha"></a>重新setSelected方法，来修改显示的alpha</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setSelected</span><span class="params">(<span class="keyword">boolean</span> selected)</span> </span>&#123;</span><br><span class="line">            normalAlpha = selected ? <span class="number">0</span> : <span class="number">255</span>;</span><br><span class="line">            <span class="keyword">super</span>.setSelected(selected);</span><br><span class="line">        &#125;</span><br></pre></td></tr></table></figure>
+<h2 id="TabView的onMeasure方法"><a href="#TabView的onMeasure方法" class="headerlink" title="TabView的onMeasure方法"></a>TabView的onMeasure方法</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onMeasure</span><span class="params">(<span class="keyword">int</span> widthMeasureSpec, <span class="keyword">int</span> heightMeasureSpec)</span> </span>&#123;</span><br><span class="line">            <span class="keyword">int</span> width = MeasureSpec.getSize(widthMeasureSpec);</span><br><span class="line">            <span class="keyword">int</span> widthMode = MeasureSpec.getMode(widthMeasureSpec);</span><br><span class="line"></span><br><span class="line">            <span class="keyword">int</span> height = MeasureSpec.getSize(heightMeasureSpec);</span><br><span class="line">            <span class="keyword">int</span> heightMode = MeasureSpec.getMode(heightMeasureSpec);</span><br><span class="line">            <span class="keyword">int</span> w = <span class="number">0</span>, h = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">            measureText();<span class="comment">//获得指定字体大小text的显示矩阵</span></span><br><span class="line">            <span class="comment">//显示内容的最大宽度</span></span><br><span class="line">            <span class="keyword">int</span> contentWidth = Math.max(boundText.width(), Math.max(tab.normalDrawable.getIntrinsicWidth(), tab.selectDrawable.getIntrinsicWidth()));</span><br><span class="line">            <span class="comment">//期望的宽度</span></span><br><span class="line">            <span class="keyword">int</span> desiredWidth = getPaddingLeft() + getPaddingRight() + contentWidth;</span><br><span class="line">            <span class="keyword">switch</span> (widthMode) &#123;</span><br><span class="line">                <span class="keyword">case</span> MeasureSpec.AT_MOST:</span><br><span class="line">                    w = Math.min(width, desiredWidth);</span><br><span class="line">                    <span class="keyword">break</span>;</span><br><span class="line">                <span class="keyword">case</span> MeasureSpec.EXACTLY: <span class="comment">//实现的ViewGroup中已经指定精确TabView的宽度</span></span><br><span class="line">                    w = width;</span><br><span class="line">                    <span class="keyword">break</span>;</span><br><span class="line">                <span class="keyword">case</span> MeasureSpec.UNSPECIFIED:</span><br><span class="line">                    w = desiredWidth;</span><br><span class="line">                    <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">//获得显示内容的高度，注意这里计算text的高度使用了Paint的getFontSpacing()方法，原因可以参考文后资料</span></span><br><span class="line">            <span class="keyword">int</span> contentHeight = (<span class="keyword">int</span>) (textNormalPaint.getFontSpacing() + Math.max(tab.normalDrawable.getIntrinsicHeight(), tab.selectDrawable.getIntrinsicHeight()) + drawablePadding);</span><br><span class="line">            <span class="comment">//期望的最大高度</span></span><br><span class="line">            <span class="keyword">int</span> desiredHeight = getPaddingTop() + getPaddingBottom() + contentHeight;</span><br><span class="line">            <span class="keyword">switch</span> (heightMode) &#123;</span><br><span class="line">                <span class="keyword">case</span> MeasureSpec.AT_MOST:</span><br><span class="line">                    h = Math.min(height, desiredHeight);</span><br><span class="line">                    <span class="keyword">break</span>;</span><br><span class="line">                <span class="keyword">case</span> MeasureSpec.EXACTLY:</span><br><span class="line">                    h = height;</span><br><span class="line">                    <span class="keyword">break</span>;</span><br><span class="line">                <span class="keyword">case</span> MeasureSpec.UNSPECIFIED:</span><br><span class="line">                    h = height;</span><br><span class="line">                    <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            setMeasuredDimension(w, h);</span><br><span class="line">            viewWidth = getMeasuredWidth();</span><br><span class="line">            viewHeight = getMeasuredHeight();</span><br><span class="line">        &#125;</span><br></pre></td></tr></table></figure>
+<h2 id="TabView的onDraw方法"><a href="#TabView的onDraw方法" class="headerlink" title="TabView的onDraw方法"></a>TabView的onDraw方法</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onDraw</span><span class="params">(Canvas canvas)</span> </span>&#123;</span><br><span class="line">            <span class="keyword">super</span>.onDraw(canvas);</span><br><span class="line">            drawNoramalBitmap(canvas);</span><br><span class="line">            drawSelectBitmap(canvas);</span><br><span class="line">            drawText(canvas);</span><br><span class="line">        &#125;</span><br></pre></td></tr></table></figure>
+<h2 id="TabView的自然状态drawable的绘制"><a href="#TabView的自然状态drawable的绘制" class="headerlink" title="TabView的自然状态drawable的绘制"></a>TabView的自然状态drawable的绘制</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">drawNoramalBitmap</span><span class="params">(Canvas canvas)</span> </span>&#123;</span><br><span class="line">            <span class="keyword">int</span> width = tab.normalDrawable.getIntrinsicWidth();</span><br><span class="line">            <span class="keyword">int</span> height = tab.normalDrawable.getIntrinsicHeight();</span><br><span class="line">            <span class="keyword">int</span> left = (viewWidth - width) / <span class="number">2</span>;</span><br><span class="line">            <span class="keyword">int</span> top = (viewHeight - height - boundText.height() - drawablePadding) &gt;&gt; <span class="number">1</span>;</span><br><span class="line">            tab.normalDrawable.setBounds(left, top, left + width, top + height);</span><br><span class="line">            tab.normalDrawable.setAlpha(normalAlpha); <span class="comment">//修改绘制drawable的alpha</span></span><br><span class="line">            tab.normalDrawable.draw(canvas);</span><br><span class="line">        &#125;</span><br></pre></td></tr></table></figure>
+<h2 id="TabView的选中状态drawable的绘制"><a href="#TabView的选中状态drawable的绘制" class="headerlink" title="TabView的选中状态drawable的绘制"></a>TabView的选中状态drawable的绘制</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">drawSelectBitmap</span><span class="params">(Canvas canvas)</span> </span>&#123;</span><br><span class="line">            <span class="keyword">int</span> width = tab.selectDrawable.getIntrinsicWidth();</span><br><span class="line">            <span class="keyword">int</span> height = tab.selectDrawable.getIntrinsicHeight();</span><br><span class="line">            <span class="keyword">int</span> left = (viewWidth - width) / <span class="number">2</span>;</span><br><span class="line">            <span class="keyword">int</span> top = (viewHeight - height - boundText.height() - drawablePadding) &gt;&gt; <span class="number">1</span>;</span><br><span class="line">            tab.selectDrawable.setBounds(left, top, left + width, top + height);</span><br><span class="line">            tab.selectDrawable.setAlpha(<span class="number">255</span> - normalAlpha); <span class="comment">//修改绘制drawable的alpha</span></span><br><span class="line">            tab.selectDrawable.draw(canvas);</span><br><span class="line">        &#125;</span><br></pre></td></tr></table></figure>
+<h2 id="TabView的text的绘制"><a href="#TabView的text的绘制" class="headerlink" title="TabView的text的绘制"></a>TabView的text的绘制</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">drawText</span><span class="params">(Canvas canvas)</span> </span>&#123;</span><br><span class="line">            <span class="keyword">int</span> drawableHeight = Math.max(tab.normalDrawable.getIntrinsicHeight(), tab.selectDrawable.getIntrinsicHeight());</span><br><span class="line">            <span class="keyword">float</span> x = (viewWidth - boundText.width()) / <span class="number">2.0f</span>;</span><br><span class="line">            <span class="keyword">float</span> y = (viewHeight + drawableHeight + boundText.height() + drawablePadding) &gt;&gt; <span class="number">1</span>;</span><br><span class="line">            textNormalPaint.setAlpha(normalAlpha); <span class="comment">//修改绘制text自然状态的alpha</span></span><br><span class="line">            canvas.drawText(tab.title, x, y, textNormalPaint);</span><br><span class="line">            textSelectPaint.setAlpha(<span class="number">255</span> - normalAlpha); <span class="comment">//修改绘制text选中状态的alpha</span></span><br><span class="line">            canvas.drawText(tab.title, x, y, textSelectPaint);</span><br><span class="line">        &#125;</span><br></pre></td></tr></table></figure>
+<h1 id="如何使用"><a href="#如何使用" class="headerlink" title="如何使用"></a>如何使用</h1><h2 id="使用的xml代码"><a href="#使用的xml代码" class="headerlink" title="使用的xml代码"></a>使用的xml代码</h2><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">com.think.android.widget.TabSelectorLayout</span></span></span><br><span class="line"><span class="tag">        <span class="attr">android:id</span>=<span class="string">"@+id/tabselectorlayout"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">android:layout_width</span>=<span class="string">"match_parent"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">android:layout_height</span>=<span class="string">"wrap_content"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">android:layout_alignParentBottom</span>=<span class="string">"true"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">app:selectTextColor</span>=<span class="string">"@android:color/holo_green_dark"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">app:normalTextColor</span>=<span class="string">"@android:color/darker_gray"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">app:drawablePadding</span>=<span class="string">"5dp"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">android:textSize</span>=<span class="string">"13sp"</span>/&gt;</span></span><br></pre></td></tr></table></figure>
+<h2 id="使用的java代码"><a href="#使用的java代码" class="headerlink" title="使用的java代码"></a>使用的java代码</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//首先获得TabSelectorLayout对象</span></span><br><span class="line">mTabSelectorLayout = (TabSelectorLayout) findViewById(R.id.tabselectorlayout);</span><br><span class="line">...</span><br><span class="line"><span class="comment">//添加tab</span></span><br><span class="line">mTabSelectorLayout.addTab(TabSelectorLayout.newTab()</span><br><span class="line">                .setNormalDrawable(resources.getDrawable(R.drawable.ic_tab_moment))</span><br><span class="line">                .setSelectDrawable(resources.getDrawable(R.drawable.ic_tab_moment_select))</span><br><span class="line">                .setTitle(<span class="string">"moment"</span>));</span><br><span class="line">...</span><br><span class="line"><span class="comment">//和ViewPager绑定</span></span><br><span class="line">mTabSelectorLayout.bindViewPager(mViewPager);</span><br></pre></td></tr></table></figure>
+<h1 id="文章感想"><a href="#文章感想" class="headerlink" title="文章感想"></a>文章感想</h1><p>写完本文就觉得自己啰嗦了，总想将所有的内容都写出来，哪怕再简单的东西，大量的代码对读者来说都很简单，但我只想展示自己实现这个控件一步步的过程，<br>期望自己以后的文章尽量提升blog的水平吧  </p>
+<p>到这里本文就到此结束了.<a href="https://github.com/borneywpf/ThinkAndroid" target="_blank" rel="noopener">[示例代码]</a></p>
+<hr>
+<p>参考资料<br>如何测量text的高度<br>[<a href="http://stackoverflow.com/questions/3654321/measuring-text-height-to-be-drawn-on-canvas-android" target="_blank" rel="noopener">资料1</a>]<br>[<a href="http://jyhshin.pixnet.net/blog/post/37074598-android-get-text-height" target="_blank" rel="noopener">资料2</a>]</p>
+
+      
+    </div>
+    
+    
+    
+    
+    <div>    
+ 
+ 
+    <ul class="post-copyright">
+      <li class="post-copyright-author">
+          <strong>本文作者：</strong>Borney
+      </li>
+      <li class="post-copyright-link">
+        <strong>本文链接：</strong>
+        <a href="/2017/09/29/2017-9-29-selecttab/" title="Android自定义控件之TabSelectorLayout(微信tab)">2017/09/29/2017-9-29-selecttab/</a>
+      </li>
+      <li class="post-copyright-license">
+        <strong>版权声明： </strong>
+        本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0 CN</a> 许可协议。转载请注明出处！
+      </li>
+    </ul>
+  
+</div>
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/android/" rel="tag"># android</a>
+          
+            <a href="/tags/自定义控件/" rel="tag"># 自定义控件</a>
+          
+            <a href="/tags/tab/" rel="tag"># tab</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/09/22/2017-09-22/" rel="next" title="java之动态代理">
+                <i class="fa fa-chevron-left"></i> java之动态代理
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/09/29/2017-9-29-circleimageview/" rel="prev" title="Android自定义控件之CircleImageView">
+                Android自定义控件之CircleImageView <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div id="uyan_frame"></div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          
+            <p class="site-author-name" itemprop="name">Borney</p>
+            <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+            
+              <a href="/archives/">
+            
+                <span class="site-state-item-count">14</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-categories">
+              <a href="/categories/index.html">
+                <span class="site-state-item-count">6</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/tags/index.html">
+                <span class="site-state-item-count">26</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/borneywpf" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>GitHub</a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#概述"><span class="nav-number">1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#实现过程"><span class="nav-number">2.</span> <span class="nav-text">实现过程</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#上述技术难点如何解决"><span class="nav-number">2.1.</span> <span class="nav-text">上述技术难点如何解决</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#定义View的属性"><span class="nav-number">2.2.</span> <span class="nav-text">定义View的属性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#定义Tab属性类"><span class="nav-number">2.3.</span> <span class="nav-text">定义Tab属性类</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#TabSelectorLayout的属性"><span class="nav-number">2.4.</span> <span class="nav-text">TabSelectorLayout的属性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#构造方法-解析xml属性"><span class="nav-number">2.5.</span> <span class="nav-text">构造方法(解析xml属性)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#提供获得Tab对象的方法"><span class="nav-number">2.6.</span> <span class="nav-text">提供获得Tab对象的方法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#将初始化好的Tab添加到TabSelectorLayout中"><span class="nav-number">2.7.</span> <span class="nav-text">将初始化好的Tab添加到TabSelectorLayout中</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#重写addView对添加的child做以下限制"><span class="nav-number">2.8.</span> <span class="nav-text">重写addView对添加的child做以下限制</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#关联ViewPager"><span class="nav-number">2.9.</span> <span class="nav-text">关联ViewPager</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#OnPageChangeListener的实现，给TabView传入ViewPager滑动变化数据"><span class="nav-number">2.10.</span> <span class="nav-text">OnPageChangeListener的实现，给TabView传入ViewPager滑动变化数据</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#切换Tab方法"><span class="nav-number">2.11.</span> <span class="nav-text">切换Tab方法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#万年不变的onMeasure方法"><span class="nav-number">2.12.</span> <span class="nav-text">万年不变的onMeasure方法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#获取actionBar的高度"><span class="nav-number">2.13.</span> <span class="nav-text">获取actionBar的高度</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#必须实现的onLayout方法"><span class="nav-number">2.14.</span> <span class="nav-text">必须实现的onLayout方法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#定义TabView"><span class="nav-number">2.15.</span> <span class="nav-text">定义TabView</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#TabView属性"><span class="nav-number">2.16.</span> <span class="nav-text">TabView属性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#TabView属性初始化"><span class="nav-number">2.17.</span> <span class="nav-text">TabView属性初始化</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#获得指定字体大小text的显示矩阵"><span class="nav-number">2.18.</span> <span class="nav-text">获得指定字体大小text的显示矩阵</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#通过监听到的ViewPager滑动变化来修改显示的alpha"><span class="nav-number">2.19.</span> <span class="nav-text">通过监听到的ViewPager滑动变化来修改显示的alpha</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#重新setSelected方法，来修改显示的alpha"><span class="nav-number">2.20.</span> <span class="nav-text">重新setSelected方法，来修改显示的alpha</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#TabView的onMeasure方法"><span class="nav-number">2.21.</span> <span class="nav-text">TabView的onMeasure方法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#TabView的onDraw方法"><span class="nav-number">2.22.</span> <span class="nav-text">TabView的onDraw方法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#TabView的自然状态drawable的绘制"><span class="nav-number">2.23.</span> <span class="nav-text">TabView的自然状态drawable的绘制</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#TabView的选中状态drawable的绘制"><span class="nav-number">2.24.</span> <span class="nav-text">TabView的选中状态drawable的绘制</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#TabView的text的绘制"><span class="nav-number">2.25.</span> <span class="nav-text">TabView的text的绘制</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#如何使用"><span class="nav-number">3.</span> <span class="nav-text">如何使用</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#使用的xml代码"><span class="nav-number">3.1.</span> <span class="nav-text">使用的xml代码</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#使用的java代码"><span class="nav-number">3.2.</span> <span class="nav-text">使用的java代码</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#文章感想"><span class="nav-number">4.</span> <span class="nav-text">文章感想</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Borney</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+  <span class="post-meta-divider">|</span>
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.2</div>
+
+
+        
+
+
+
+
+  <script type="text/javascript">
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//tajs.qq.com/stats?sId=63720031";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.2"></script>
+
+
+
+  
+  
+
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.2"></script>
+
+
+  
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+    
+
+    
+      <!-- UY BEGIN -->
+      <script type="text/javascript" src="http://v2.uyan.cc/code/uyan.js?uid=2145075"></script>
+      <!-- UY END -->
+    
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("87F3QvzSkjwM9WpKLPGupbUk-gzGzoHsz", "GW1l2J4GFXAc2AAqPQfPNYLy");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

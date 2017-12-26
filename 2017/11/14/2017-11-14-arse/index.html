@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.2" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="android,resources.arsc," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.2" />
+
+
+
+
+
+
+<meta name="description" content="准备工作先附图一张在阅读参考资料的内容时，看了这个图一脸懵逼(what are you about)，阅读完之后也是似懂非懂的，还是觉得没有贯通任督二脉，于是决定从一个简单apk文件的resources.arsc文件一个字节一个字节的分析，阅读了参考资料1的github工程的源码，刻意的寻找了下，还真找到了google">
+<meta name="keywords" content="android,resources.arsc">
+<meta property="og:type" content="article">
+<meta property="og:title" content="深入浅出的理解Android resources.arsc文件">
+<meta property="og:url" content="http://thinkdevos.net/2017/11/14/2017-11-14-arse/index.html">
+<meta property="og:site_name" content="Borney的博客">
+<meta property="og:description" content="准备工作先附图一张在阅读参考资料的内容时，看了这个图一脸懵逼(what are you about)，阅读完之后也是似懂非懂的，还是觉得没有贯通任督二脉，于是决定从一个简单apk文件的resources.arsc文件一个字节一个字节的分析，阅读了参考资料1的github工程的源码，刻意的寻找了下，还真找到了google提供的一个优秀项目android-arscblamer,其代码的优秀程度，我也只">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://thinkdevos.net/2017/11/14/2017-11-14-arse/resourcearse.png">
+<meta property="og:image" content="http://thinkdevos.net/2017/11/14/2017-11-14-arse/android-arscblamer-arc.png">
+<meta property="og:updated_time" content="2017-12-26T11:12:00.742Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="深入浅出的理解Android resources.arsc文件">
+<meta name="twitter:description" content="准备工作先附图一张在阅读参考资料的内容时，看了这个图一脸懵逼(what are you about)，阅读完之后也是似懂非懂的，还是觉得没有贯通任督二脉，于是决定从一个简单apk文件的resources.arsc文件一个字节一个字节的分析，阅读了参考资料1的github工程的源码，刻意的寻找了下，还真找到了google提供的一个优秀项目android-arscblamer,其代码的优秀程度，我也只">
+<meta name="twitter:image" content="http://thinkdevos.net/2017/11/14/2017-11-14-arse/resourcearse.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.2',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://thinkdevos.net/2017/11/14/2017-11-14-arse/"/>
+
+
+
+
+
+  <title>深入浅出的理解Android resources.arsc文件 | Borney的博客</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Borney的博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://thinkdevos.net/2017/11/14/2017-11-14-arse/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Borney">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Borney的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">深入浅出的理解Android resources.arsc文件</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-11-14T16:39:46+08:00">
+                2017-11-14
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Android/" itemprop="url" rel="index">
+                    <span itemprop="name">Android</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+             <span id="/2017/11/14/2017-11-14-arse/" class="leancloud_visitors" data-flag-title="深入浅出的理解Android resources.arsc文件">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+      
+      
+
+      
+        <h1 id="准备工作"><a href="#准备工作" class="headerlink" title="准备工作"></a>准备工作</h1><p>先附图一张<br><img src="/2017/11/14/2017-11-14-arse/resourcearse.png" title="resources.arsc文件结构图"><br>在阅读参考资料的内容时，看了这个图一脸懵逼(what are you about)，阅读完之后也是似懂非懂的，还是觉得没有贯通任督二脉，于是决定从一个简单apk文件的resources.arsc文件一个字节一个字节的分析，阅读了参考资料1的github工程的源码，刻意的寻找了下，还真找到了google提供的一个优秀项目<a href="https://github.com/google/android-arscblamer" target="_blank" rel="noopener">android-arscblamer</a>,其代码的优秀程度，我也只能跪拜了。本文结合我对android-arscblamer修改后的工程<a href="https://github.com/borneywpf/arscblamer-gradle" target="_blank" rel="noopener">arscblamer-gradle</a>源码和上图已经关键的<a href="https://github.com/aosp-mirror/platform_frameworks_base/blob/master/libs/androidfw/include/androidfw/ResourceTypes.h" target="_blank" rel="noopener">ResourceTypes.h</a>文件，让我们一起深入浅出的理解Android resources.arsc文件  </p>
+<p><a href="https://github.com/borneywpf/arscblamer-gradle" target="_blank" rel="noopener">arscblamer-gradle</a>工程中的<strong>src/main/resources</strong>目录中包含了本文分析的资源文件(apk,resources.arsc,以及详细的二进制文件解析的注释文件resources.md和工程生产的excel文件),本文主要起一个引子的作用，教会大家如何分析resources.arsc这个二进制文件，好了，废话完毕，让我们进入主题吧</p>
+<h1 id="从源码中读懂二进制文件resources-arsc"><a href="#从源码中读懂二进制文件resources-arsc" class="headerlink" title="从源码中读懂二进制文件resources.arsc"></a>从源码中读懂二进制文件resources.arsc</h1><p>如果什么都不看，直接去看文件resources.arsc的16进制码很容易陷进去，我们就站在巨人的肩膀上抄近路吧</p>
+<h2 id="理解清楚android-arscblamer的代码结构"><a href="#理解清楚android-arscblamer的代码结构" class="headerlink" title="理解清楚android-arscblamer的代码结构"></a>理解清楚android-arscblamer的代码结构</h2><img src="/2017/11/14/2017-11-14-arse/android-arscblamer-arc.png" title="工程类图">
+<p>如上工程类图已经能反应出很多信息:</p>
+<p>1.所有内容都是序列化资源(实现了SerializableResource接口)<br>2.看到了很多Chunk(没错，resources.arsc从面向对象的角度讲，就是由一个个Chunk构成的)<br>3.Chunk有之间有点类似树型结构(个人理解这个和Android中ViewGroup和View的关系类似，用到了设计模式中的组合模式)</p>
+<h2 id="拿几个Chunk开开刀"><a href="#拿几个Chunk开开刀" class="headerlink" title="拿几个Chunk开开刀"></a>拿几个Chunk开开刀</h2><p>如上文所述，resources.arsc就是由多个的Chunk来构成的，那么我们就来几个示例分析下这些Chunk吧(首先你得要能查看resources.arsc文件的16进制编码)</p>
+<p><strong>注:resources.arsc文件的二进制是以小端序的方式存储的(最低位字节存储在最低的内存地址处)</strong></p>
+<ul>
+<li>RES_TABLE Chunk(对应的类文件是ResourceTableChunk.java，没错它就是一个包含多个Chunk的ChunkWithChunks)</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">02 00       // RES_TABLE_TYPE                    = 0x0002 0ffset = 0    start table head</span><br><span class="line"></span><br><span class="line">0C 00       // ResTable_header headerSize        = 12</span><br><span class="line">E0 07 00 00 // ResTable_header size              = 2016</span><br><span class="line">01 00 00 00 // ResTable_header packageCount      = 1                     end table head</span><br></pre></td></tr></table></figure>
+<p>如上可以看到Chunk RES_TABLE的头信息，是不是可以和文章最开始附图能对应的上，如果只和图对应上就太简单了，那么让我们来看看android源码中ResourceTypes.h对应的RES_TABLE对应的数据结构吧<br>如下是所有Chunk公用的数据结构Chunk header</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** ********************************************************************</span></span><br><span class="line"><span class="comment"> *  Base Types</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> *  These are standard types that are shared between multiple specific</span></span><br><span class="line"><span class="comment"> *  resource types.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> *********************************************************************** */</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Header that appears at the front of every data chunk in a resource.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">ResChunk_header</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    <span class="comment">// Type identifier for this chunk.  The meaning of this value depends</span></span><br><span class="line">    <span class="comment">// on the containing chunk.</span></span><br><span class="line">    <span class="keyword">uint16_t</span> type;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Size of the chunk header (in bytes).  Adding this value to</span></span><br><span class="line">    <span class="comment">// the address of the chunk allows you to find its associated data</span></span><br><span class="line">    <span class="comment">// (if any).</span></span><br><span class="line">    <span class="keyword">uint16_t</span> headerSize;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Total size of this chunk (in bytes).  This is the chunkSize plus</span></span><br><span class="line">    <span class="comment">// the size of any data associated with the chunk.  Adding this value</span></span><br><span class="line">    <span class="comment">// to the chunk allows you to completely skip its contents (including</span></span><br><span class="line">    <span class="comment">// any child chunks).  If this value is the same as chunkSize, there is</span></span><br><span class="line">    <span class="comment">// no data associated with the chunk.</span></span><br><span class="line">    <span class="keyword">uint32_t</span> size;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>而我们分析的RES_TABLE的header结构体如下，是不是和16进制对应上了，基础的3个头部信息(类型，头大小，块大小)和一个资源包的数量packageCount</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">ResTable_header</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">ResChunk_header</span> <span class="title">header</span>;</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// The number of ResTable_package structures.</span></span><br><span class="line">    <span class="keyword">uint32_t</span> packageCount;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>ResourceTypes.h中的Chunk类型</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">enum</span> &#123;</span><br><span class="line">    RES_NULL_TYPE               = <span class="number">0x0000</span>,</span><br><span class="line">    RES_STRING_POOL_TYPE        = <span class="number">0x0001</span>,</span><br><span class="line">    RES_TABLE_TYPE              = <span class="number">0x0002</span>,</span><br><span class="line">    RES_XML_TYPE                = <span class="number">0x0003</span>,</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Chunk types in RES_XML_TYPE</span></span><br><span class="line">    RES_XML_FIRST_CHUNK_TYPE    = <span class="number">0x0100</span>,</span><br><span class="line">    RES_XML_START_NAMESPACE_TYPE= <span class="number">0x0100</span>,</span><br><span class="line">    RES_XML_END_NAMESPACE_TYPE  = <span class="number">0x0101</span>,</span><br><span class="line">    RES_XML_START_ELEMENT_TYPE  = <span class="number">0x0102</span>,</span><br><span class="line">    RES_XML_END_ELEMENT_TYPE    = <span class="number">0x0103</span>,</span><br><span class="line">    RES_XML_CDATA_TYPE          = <span class="number">0x0104</span>,</span><br><span class="line">    RES_XML_LAST_CHUNK_TYPE     = <span class="number">0x017f</span>,</span><br><span class="line">    <span class="comment">// This contains a uint32_t array mapping strings in the string</span></span><br><span class="line">    <span class="comment">// pool back to resource identifiers.  It is optional.</span></span><br><span class="line">    RES_XML_RESOURCE_MAP_TYPE   = <span class="number">0x0180</span>,</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Chunk types in RES_TABLE_TYPE</span></span><br><span class="line">    RES_TABLE_PACKAGE_TYPE      = <span class="number">0x0200</span>,</span><br><span class="line">    RES_TABLE_TYPE_TYPE         = <span class="number">0x0201</span>,</span><br><span class="line">    RES_TABLE_TYPE_SPEC_TYPE    = <span class="number">0x0202</span>,</span><br><span class="line">    RES_TABLE_LIBRARY_TYPE      = <span class="number">0x0203</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>Chunk.java中的Type枚举和上边是一一对应的</p>
+<ul>
+<li>RES_STRING_POOL Chunk(StringPoolChunk.java)</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">01 00       // RES_STRING_POOL_TYPE              = 0x0001 0ffset = 12   start sting pool head</span><br><span class="line"></span><br><span class="line">1C 00       // ResStringPool_header headerSize   = 28</span><br><span class="line">08 01 00 00 // ResStringPool_header size         = 264</span><br><span class="line">07 00 00 00 // ResStringPool_header stringCount  = 7</span><br><span class="line">01 00 00 00 // ResStringPool_header styleCount   = 1</span><br><span class="line">00 01 00 00 // ResStringPool_header flags        = 256</span><br><span class="line">3C 00 00 00 // ResStringPool_header stringsStart = 60</span><br><span class="line">F0 00 00 00 // ResStringPool_header stylesStart  = 240                  end sting pool head</span><br><span class="line"></span><br><span class="line">00 00 00 00 // 第1个字符串的 stringOffset 60+12+0=72        0ffset = 40</span><br><span class="line">10 00 00 00 // 第2个字符串的 stringOffset 60+12+16=88 下面6个字符串一样就不一一解释了</span><br><span class="line">...</span><br><span class="line">00 00 00 00 // 第1个style的 styleOffset 240+12+0=252</span><br><span class="line">09          // 第1个字符串的字符数 9                          0ffset = 72</span><br><span class="line">0D          // 第1个字符串的编码数 13  UTF-8字符串有两种长度：字符数量和编码长度；但是，UTF-16字符串只有1个长度：字符数。</span><br><span class="line">E4 BD A0 E5 A5 BD 41 6E 64 72 6F 69 64 00        // 你好Android</span><br><span class="line">...</span><br><span class="line">02 00 00 00 // 第1个1style的 ResStringPool_ref nameIndex = 2    0ffset = 252 注意：一个字符串可以对应多个ResStringPool_span和一个ResStringPool_ref。ResStringPool_span在前描述字符串的样式,ResStringPool_ref在后固定值为0XFFFFFFFF作为占位符</span><br><span class="line">02 00 00 00 // 第1个1style的 start</span><br><span class="line">08 00 00 00 // 第1个1style的 end</span><br><span class="line">FF FF FF FF // 循环判断第1个style的ResStringPool_span</span><br><span class="line">FF FF FF FF FF FF FF FF //样式块最后会以两个值为0XFFFFFFFF的ResStringPool_ref作为结束</span><br></pre></td></tr></table></figure>
+<p>如上是RES_STRING_POOL Chunk的部分内容，头部信息我们就略过了,结合resources.arsc文件结构图，我们可以看到RES_STRING_POOL Chunk包含了基本信息(header字符串数，style数，标记flags，字符串的起始位置和style的其实位置)和一个字符串偏移数组，一个style偏移数组以及字符串数组和style数组；如下是RES_STRING_POOL Chunk的header，后边分析的Chunk header 都与我们之前分析的RES_TABLE Chunk和RES_STRING_POOL Chunk类似，后边就不一一说明了，关于RES_STRING_POOL Chunk的内容，在上述的二级制分析中，注释已经很详细了，请大家结合<a href="https://github.com/borneywpf/arscblamer-gradle" target="_blank" rel="noopener">arscblamer-gradle</a>的源码和其中的resource分析查看，另外微信的资源混淆就是在这里做了处理，混淆字符串并修改相应资源的目录。</p>
+<figure class="highlight c"><figcaption><span>RES_STRING_POOL Chunk header</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">ResStringPool_header</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">ResChunk_header</span> <span class="title">header</span>;</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// Number of strings in this pool (number of uint32_t indices that follow</span></span><br><span class="line">    <span class="comment">// in the data).</span></span><br><span class="line">    <span class="keyword">uint32_t</span> stringCount;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Number of style span arrays in the pool (number of uint32_t indices</span></span><br><span class="line">    <span class="comment">// follow the string indices).</span></span><br><span class="line">    <span class="keyword">uint32_t</span> styleCount;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Flags.</span></span><br><span class="line">    <span class="keyword">enum</span> &#123;</span><br><span class="line">        <span class="comment">// If set, the string index is sorted by the string values (based</span></span><br><span class="line">        <span class="comment">// on strcmp16()).</span></span><br><span class="line">        SORTED_FLAG = <span class="number">1</span>&lt;&lt;<span class="number">0</span>,</span><br><span class="line"></span><br><span class="line">        <span class="comment">// String pool is encoded in UTF-8</span></span><br><span class="line">        UTF8_FLAG = <span class="number">1</span>&lt;&lt;<span class="number">8</span></span><br><span class="line">    &#125;;</span><br><span class="line">    <span class="keyword">uint32_t</span> flags;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Index from header of the string data.</span></span><br><span class="line">    <span class="keyword">uint32_t</span> stringsStart;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Index from header of the style data.</span></span><br><span class="line">    <span class="keyword">uint32_t</span> stylesStart;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>RES_TABLE_PACKAGE Chunk(PackageChunk.java，也是一个ChunkWithChunks)</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">00 02       // RES_TABLE_PACKAGE_TYPE            = 0x0200 0ffset = 276   start package chunk head</span><br><span class="line"></span><br><span class="line">20 01       // ResTable_package headerSize       = 288</span><br><span class="line">CC 06 00 00 // ResTable_package size             = 1740</span><br><span class="line">7F 00 00 00 // ResTable_package id               = 0x7F //包的ID,等于Package Id,一般用户包的值Package Id为0X7F,系统资源包的Package Id为0X01</span><br><span class="line">63 00 6F 00 6D 00 2E 00 65 00 78 00 61 00 6D 00 // ResTable_package name = com.example.borney.helloresource</span><br><span class="line">70 00 6C 00 65 00 2E 00 62 00 6F 00 72 00 6E 00</span><br><span class="line">65 00 79 00 2E 00 68 00 65 00 6C 00 6C 00 6F 00</span><br><span class="line">72 00 65 00 73 00 6F 00 75 00 72 00 63 00 65 00</span><br><span class="line">00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00</span><br><span class="line">00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00</span><br><span class="line">00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00</span><br><span class="line">00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00</span><br><span class="line">00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00</span><br><span class="line">00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00</span><br><span class="line">00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00</span><br><span class="line">00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00</span><br><span class="line">00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00</span><br><span class="line">00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00</span><br><span class="line">00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00</span><br><span class="line">00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00</span><br><span class="line">20 01 00 00 // ResTable_package typeStrings      = 288 //类型字符串资源池相对头部的偏移</span><br><span class="line">00 00 00 00 // ResTable_package lastPublicType   = 0  //最后一个导出的Public类型字符串在类型字符串资源池中的索引，目前这个值设置为类型字符串资源池的元素个数。</span><br><span class="line">C8 01 00 00 // ResTable_package keyStrings       = 456 //定义资源键符号表的ResStringPool_header的偏移量。 如果为零，则此包将从另一个基本包继承（重写其中的特定值）。</span><br><span class="line">00 00 00 00 // ResTable_package lastPublicKey    = 0 //最后一个由其他人公开使用的keyStrings索引。</span><br><span class="line">00 00 00 00 // ResTable_package typeIdOffset     = 0</span><br></pre></td></tr></table></figure>
+<p>和之前分析的两个Chunk类似，RES_TABLE_PACKAGE Chunk的头部信息如上分析</p>
+<ul>
+<li>RES_TABLE_PACKAGE Chunk 的类型字符串池(StringPoolChunk.java)</li>
+</ul>
+<p>如下是RES_TABLE_PACKAGE Chunk中的类型RES_STRING_POOL Chunk</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">01 00       // RES_STRING_POOL_TYPE              = 0x0001   offset = 564    start sting pool head</span><br><span class="line"></span><br><span class="line">1C 00       // ResStringPool_header headerSize   = 28</span><br><span class="line">A8 00 00 00 // ResStringPool_header size         = 168</span><br><span class="line">07 00 00 00 // ResStringPool_header stringCount  = 7</span><br><span class="line">00 00 00 00 // ResStringPool_header styleCount   = 0</span><br><span class="line">00 00 00 00 // ResStringPool_header flags        = 0</span><br><span class="line">38 00 00 00 // ResStringPool_header stringsStart = 56</span><br><span class="line">00 00 00 00 // ResStringPool_header stylesStart  = 0                        end sting pool head</span><br><span class="line">00 00 00 00 // 第1个字符串的 stringOffset 564+56+0 = 620       0ffset = 592</span><br><span class="line">0E 00 00 00 // 第2个字符串的 stringOffset 564+56+14=634 下面6个字符串一样就不一一解释了</span><br><span class="line">1C 00 00 00</span><br><span class="line">...</span><br><span class="line">05          // 第1个字符串的字符数 5</span><br><span class="line">00          // UTF-16 offset 占位符</span><br><span class="line">63 00 6F 00 6C 00 6F 00 72 00 00 00               // color</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<ul>
+<li>RES_TABLE_PACKAGE Chunk 的关键字字符串池(StringPoolChunk.java)</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">01 00       // RES_STRING_POOL_TYPE              = 0x0001   offset = 732    start sting pool head</span><br><span class="line"></span><br><span class="line">1C 00       // ResStringPool_header headerSize   = 28</span><br><span class="line">D0 00 00 00 // ResStringPool_header size         = 208</span><br><span class="line">0A 00 00 00 // ResStringPool_header stringCount  = 10</span><br><span class="line">00 00 00 00 // ResStringPool_header styleCount   = 0</span><br><span class="line">00 01 00 00 // ResStringPool_header flags        = 256</span><br><span class="line">44 00 00 00 // ResStringPool_header stringsStart = 68</span><br><span class="line">00 00 00 00 // ResStringPool_header stylesStart  = 0</span><br><span class="line">00 00 00 00 // 第1个字符串的 stringOffset 732+68+0 = 800       0ffset = 760</span><br><span class="line">...</span><br><span class="line">83 00 00 00 // 第10个字符串的 stringOffset 732+68+131 = 931</span><br><span class="line">0B</span><br><span class="line">0B</span><br><span class="line">63 6F 6C 6F 72 41 63 63 65 6E 74 00             // colorAccent</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<ul>
+<li>RES_TABLE_TYPE_SPEC Chunk(TypeSpecChunk.java)</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">02 02       // RES_TABLE_TYPE_SPEC_TYPE         = 0x0202   offset = 940</span><br><span class="line"></span><br><span class="line">10 00       // ResTable_typeSpec headerSize     = 16</span><br><span class="line">1C 00 00 00 // ResTable_typeSpec size           = 28</span><br><span class="line">01          // ResTable_typeSpec id             = 0x01</span><br><span class="line">00 00 00    // ResTable_typeSpec res0 res1 占位符</span><br><span class="line">03 00 00 00 // ResTable_typeSpec entryCount     = 3</span><br><span class="line">00 00 00 00 // 数组resources[0]的大小为0</span><br><span class="line">00 00 00 00 // 数组resources[1]的大小为0</span><br><span class="line">00 00 00 00 // 数组resources[2]的大小为0</span><br></pre></td></tr></table></figure>
+<p>关于RES_TABLE_TYPE_SPEC的详细介绍可以参考ResourceTypes.h中的注释和参考资料中的解释，这里我就不在赘述了(其实这个具体是什么我也没搞清楚)</p>
+<ul>
+<li>RES_TABLE_TYPE Chunk(TypeChunk.java)</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line">01 02       // RES_TABLE_TYPE_TYPE              = 0x0201   offset = 968</span><br><span class="line"></span><br><span class="line">4C 00       // ResTable_type     headerSize     = 76</span><br><span class="line">88 00 00 00 // ResTable_type     size           = 136</span><br><span class="line">01          // ResTable_type     id             = 0x01</span><br><span class="line">00 00 00    // ResTable_type res0 res1 占位符</span><br><span class="line">03 00 00 00 // ResTable_type entryCount         = 3</span><br><span class="line">58 00 00 00 // ResTable_type entriesStart       = 88</span><br><span class="line">38 00 00 00 // ResTable_config size             = 56</span><br><span class="line">00 00       // ResTable_config mcc              = 0</span><br><span class="line">00 00       // ResTable_config mnc              = 0</span><br><span class="line">00 00       // ResTable_config language&#123;&#125;       = &#123;0,0&#125;</span><br><span class="line">00 00       // ResTable_config country&#123;&#125;        = &#123;0,0&#125;</span><br><span class="line">00          // ResTable_config orientation      = 0</span><br><span class="line">00          // ResTable_config touchscreen      = 0</span><br><span class="line">00 00       // ResTable_config density          = 0</span><br><span class="line">00          // ResTable_config keyboard         = 0</span><br><span class="line">00          // ResTable_config navigation       = 0</span><br><span class="line">00          // ResTable_config inputFlags       = 0</span><br><span class="line">00          // ResTable_config inputPad0        = 0 对齐位</span><br><span class="line">00 00       // ResTable_config screenWidth      = 0</span><br><span class="line">00 00       // ResTable_config screenHeight     = 0</span><br><span class="line">00 00       // ResTable_config sdkVersion       = 0</span><br><span class="line">00 00       // ResTable_config minorVersion     = 0</span><br><span class="line">00          // ResTable_config screenLayout     = 0</span><br><span class="line">00          // ResTable_config uiMode           = 0</span><br><span class="line">00 00       // ResTable_config smallestScreenWidthDp = 0</span><br><span class="line">00 00       // ResTable_config screenWidthDp    = 0</span><br><span class="line">00 00       // ResTable_config screenHeightDp   = 0</span><br><span class="line">00 00 00 00 // ResTable_config localeScript&#123;&#125;   = &#123;0,0，0,0&#125;</span><br><span class="line">00 00 00 00 00 00 00 00 // ResTable_config localeVariant&#123;&#125; = &#123;0,0，0,0,0，0,0,0&#125;</span><br><span class="line">00          // ResTable_config screenLayout2    = 0</span><br><span class="line">00          // ResTable_config screenConfigPad1 = 0 占位符</span><br><span class="line">00 00       // ResTable_config screenConfigPad2 = 0 占位符 bytesRead = 52</span><br><span class="line">00 00 00 00 // ResTable_config unknown&#123;&#125;        = &#123;0,0,0,0&#125; //size = cofigsize - 52</span><br><span class="line">00 00 00 00 // ResTable_type 第1个ResTable_entry(Entry)的offset</span><br><span class="line">10 00 00 00 // ResTable_type 第2个ResTable_entry(Entry)的offset</span><br><span class="line">20 00 00 00 // ResTable_type 第3个ResTable_entry(Entry)的offset</span><br><span class="line">08 00       // ResTable_type 第1个ResTable_entry headerSize = 8</span><br><span class="line">00 00       // ResTable_type 第1个ResTable_entry flags      = 0</span><br><span class="line">00 00 00 00 // ResTable_type 第1个ResTable_entry keyIndex   = 0 //引用标识此条目的ResTable_package :: keyStrings</span><br><span class="line">08 00       // ResTable_type 第1个ResTable_entry的Res_value size     = 8</span><br><span class="line">00          // ResTable_type 第1个ResTable_entry的Res_value res0     = 0 //占位符</span><br><span class="line">1D          // ResTable_type 第1个ResTable_entry的Res_value dataType = 0x1D</span><br><span class="line">81 40 FF FF // ResTable_type 第1个ResTable_entry的Res_value data = 0xFFFF4081</span><br><span class="line">...</span><br><span class="line">FF          // Entry 添加结束</span><br></pre></td></tr></table></figure>
+<p>如上就是Type Chunk,这个就是我们apk不同config资源的详细信息，PackageChunk之后有着多个TypeSpecChunk和TypeChunk，这里我们也不在一一解释，详细可查看我的工程中的resource目录下的resources.md</p>
+<h1 id="修改的arscblamer-gradle"><a href="#修改的arscblamer-gradle" class="headerlink" title="修改的arscblamer-gradle"></a>修改的arscblamer-gradle</h1><p>到这里，resources.arsc就分析的差不多了,<a href="https://github.com/borneywpf/arscblamer-gradle" target="_blank" rel="noopener">arscblamer-gradle</a>我将输出信息可以输出到excel中，类似于studio查看apk文件的方式  </p>
+<p>在工程下运行如下命令</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">java -jar libs/arsc-library-1.0-SNAPSHOT.jar --apk src/main/resources/app-debug.apk</span><br></pre></td></tr></table></figure>
+<p>可以看到如下结果</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br></pre></td><td class="code"><pre><span class="line">|--StringPoolChunk</span><br><span class="line">    index[0]=你好Android</span><br><span class="line">    index[1]=HelloResource</span><br><span class="line">    index[2]=b</span><br><span class="line">    index[3]=res/drawable/drawable.xml</span><br><span class="line">    index[4]=res/layout/activity_main.xml</span><br><span class="line">    index[5]=res/mipmap-xxhdpi-v4/ic_launcher.png</span><br><span class="line">    index[6]=res/mipmap-xxxhdpi-v4/ic_launcher_round.png</span><br><span class="line">    index[0]=StringPoolStyle&#123;spans=[StringPoolSpan&#123;b, start=2, stop=8&#125;]&#125;</span><br><span class="line">  |--PackageChunk</span><br><span class="line">    id=127</span><br><span class="line">    packageName=com.example.borney.helloresource</span><br><span class="line">    |--typeStringPool</span><br><span class="line">      index[0]=color</span><br><span class="line">      index[1]=dimen</span><br><span class="line">      index[2]=drawable</span><br><span class="line">      index[3]=layout</span><br><span class="line">      index[4]=mipmap</span><br><span class="line">      index[5]=string</span><br><span class="line">      index[6]=style</span><br><span class="line">    |--keyStringPool</span><br><span class="line">      index[0]=colorAccent</span><br><span class="line">      index[1]=colorPrimary</span><br><span class="line">      index[2]=colorPrimaryDark</span><br><span class="line">      index[3]=textsize</span><br><span class="line">      index[4]=drawable</span><br><span class="line">      index[5]=activity_main</span><br><span class="line">      index[6]=ic_launcher</span><br><span class="line">      index[7]=ic_launcher_round</span><br><span class="line">      index[8]=app_name</span><br><span class="line">      index[9]=Text</span><br><span class="line">    |--specChunks</span><br><span class="line">      specChunkId:1 resourceCount:3</span><br><span class="line">      specChunkId:2 resourceCount:1</span><br><span class="line">      specChunkId:3 resourceCount:1</span><br><span class="line">      specChunkId:4 resourceCount:1</span><br><span class="line">      specChunkId:5 resourceCount:2</span><br><span class="line">      specChunkId:6 resourceCount:1</span><br><span class="line">      specChunkId:7 resourceCount:1</span><br><span class="line">    |--typeChunks</span><br><span class="line">      typeChunkId:1</span><br><span class="line">      configuration:default</span><br><span class="line">        key:colorAccent flags:0 value:rgb8(ffff4081)</span><br><span class="line">        key:colorPrimary flags:0 value:rgb8(ff3f51b5)</span><br><span class="line">        key:colorPrimaryDark flags:0 value:rgb8(ff303f9f)</span><br><span class="line">      typeChunkId:2</span><br><span class="line">      configuration:default</span><br><span class="line">        key:textsize flags:0 value:dimension(3074)</span><br><span class="line">      typeChunkId:3</span><br><span class="line">      configuration:default</span><br><span class="line">        key:drawable flags:0 value:res/drawable/drawable.xml</span><br><span class="line">      typeChunkId:4</span><br><span class="line">      configuration:default</span><br><span class="line">        key:activity_main flags:0 value:res/layout/activity_main.xml</span><br><span class="line">      typeChunkId:5</span><br><span class="line">      configuration:xxxhdpi</span><br><span class="line">        key:ic_launcher_round flags:0 value:res/mipmap-xxxhdpi-v4/ic_launcher_round.png</span><br><span class="line">      typeChunkId:5</span><br><span class="line">      configuration:xxhdpi</span><br><span class="line">        key:ic_launcher flags:0 value:res/mipmap-xxhdpi-v4/ic_launcher.png</span><br><span class="line">      typeChunkId:6</span><br><span class="line">      configuration:default</span><br><span class="line">        key:app_name flags:0 value:HelloResource</span><br><span class="line">      typeChunkId:6</span><br><span class="line">      configuration:zh-rCN</span><br><span class="line">        key:app_name flags:0 value:你好Android</span><br><span class="line">      typeChunkId:7</span><br><span class="line">      configuration:default</span><br><span class="line">        key:Text flags:1 value:@ref/0x7f020000</span><br></pre></td></tr></table></figure>
+<p>是不是已经很清晰了，各个Chunk之间的关系也一目了然，至此，本文已经差不多了，我们做个简短的总结，1、一个resources.arsc文件的结构图；2、了解android源码中的ResourceTypes.h中数据结构和android-arscblamer工程对应的关系；3、结合具体apk的resources.arsc文件详细介绍了关键的Chunk，其他的我们就可以照猫画虎的去做了，4、通过android-arscblamer的完整输出我们进一步了解了resources.arsc中Chunk的组织关系。</p>
+<hr>
+<p>参考资料<br>1、<a href="http://blog.csdn.net/jiangwei0910410003/article/details/50628894" target="_blank" rel="noopener">Android逆向之旅—解析编译之后的Resource.arsc文件格式</a><br>2、<a href="http://www.cnblogs.com/njxxdx/p/4189971.html" target="_blank" rel="noopener">一个HelloWord的resources.arsc分析</a><br>3、<a href="http://shyluo.blog.51cto.com/5725845/1229262" target="_blank" rel="noopener">Android资源管理框架（Asset Manager）简要介绍和学习计划</a></p>
+
+      
+    </div>
+    
+    
+    
+    
+    <div>    
+ 
+ 
+    <ul class="post-copyright">
+      <li class="post-copyright-author">
+          <strong>本文作者：</strong>Borney
+      </li>
+      <li class="post-copyright-link">
+        <strong>本文链接：</strong>
+        <a href="/2017/11/14/2017-11-14-arse/" title="深入浅出的理解Android resources.arsc文件">2017/11/14/2017-11-14-arse/</a>
+      </li>
+      <li class="post-copyright-license">
+        <strong>版权声明： </strong>
+        本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0 CN</a> 许可协议。转载请注明出处！
+      </li>
+    </ul>
+  
+</div>
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/android/" rel="tag"># android</a>
+          
+            <a href="/tags/resources-arsc/" rel="tag"># resources.arsc</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/11/03/2017-11-03-leetcode003/" rel="next" title="LeetCode 003 Longest Substring Without Repeating Characters">
+                <i class="fa fa-chevron-left"></i> LeetCode 003 Longest Substring Without Repeating Characters
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/12/26/2017-12-26-androiddecompile/" rel="prev" title="Android 反编译工具使用汇总">
+                Android 反编译工具使用汇总 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div id="uyan_frame"></div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          
+            <p class="site-author-name" itemprop="name">Borney</p>
+            <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+            
+              <a href="/archives/">
+            
+                <span class="site-state-item-count">14</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-categories">
+              <a href="/categories/index.html">
+                <span class="site-state-item-count">6</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/tags/index.html">
+                <span class="site-state-item-count">26</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/borneywpf" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>GitHub</a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#准备工作"><span class="nav-number">1.</span> <span class="nav-text">准备工作</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#从源码中读懂二进制文件resources-arsc"><span class="nav-number">2.</span> <span class="nav-text">从源码中读懂二进制文件resources.arsc</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#理解清楚android-arscblamer的代码结构"><span class="nav-number">2.1.</span> <span class="nav-text">理解清楚android-arscblamer的代码结构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#拿几个Chunk开开刀"><span class="nav-number">2.2.</span> <span class="nav-text">拿几个Chunk开开刀</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#修改的arscblamer-gradle"><span class="nav-number">3.</span> <span class="nav-text">修改的arscblamer-gradle</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Borney</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+  <span class="post-meta-divider">|</span>
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.2</div>
+
+
+        
+
+
+
+
+  <script type="text/javascript">
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//tajs.qq.com/stats?sId=63720031";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.2"></script>
+
+
+
+  
+  
+
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.2"></script>
+
+
+  
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+    
+
+    
+      <!-- UY BEGIN -->
+      <script type="text/javascript" src="http://v2.uyan.cc/code/uyan.js?uid=2145075"></script>
+      <!-- UY END -->
+    
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("87F3QvzSkjwM9WpKLPGupbUk-gzGzoHsz", "GW1l2J4GFXAc2AAqPQfPNYLy");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
