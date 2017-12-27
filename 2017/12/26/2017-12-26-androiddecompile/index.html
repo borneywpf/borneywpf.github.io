@@ -79,7 +79,7 @@
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="https://camo.githubusercontent.com/bd3c0ea851c23c4535e43590a86c940a0786faa6/687474703a2f2f736b796c6f742e6769746875622e696f2f6a6164782f6a6164782d6775692e706e67">
 <meta property="og:image" content="http://jd.benow.ca/img/screenshot17.png">
-<meta property="og:updated_time" content="2017-12-26T12:45:43.426Z">
+<meta property="og:updated_time" content="2017-12-27T01:20:55.582Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Android 反编译工具使用汇总">
 <meta name="twitter:description" content="使用场景作为Android开发，我们经常会反编译查看一些东西(比如查看其他优秀软件的源码)，最终都是为了将android的apk处理成能查看的java代码，本文主要讲述了一些工具的安装、作用和使用方式 工具篇apktool  官方地址,这个工具主要有以下特性：    将资源(dex,resources.arsc,.9.png,XMLS)等解码成原始形式 可以将解码后的资源重新编译成APK/JAR">
@@ -98,7 +98,7 @@
     tabs: true,
     motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn"}},
     duoshuo: {
-      userId: '0',
+      userId: 'undefined',
       author: '博主'
     },
     algolia: {
@@ -321,6 +321,18 @@
 
           
             
+            <!--noindex-->
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2017/12/26/2017-12-26-androiddecompile/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count hc-comment-count" data-xid="2017/12/26/2017-12-26-androiddecompile/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+              <!--/noindex-->
+            
           
 
           
@@ -365,7 +377,7 @@
 <p>使用方式：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">Apktool v2.3.0 - a tool for reengineering Android apk files</span><br><span class="line">with smali v2.2.1 and baksmali v2.2.1</span><br><span class="line">Copyright 2014 Ryszard Wiśniewski &lt;brut.alll@gmail.com&gt;</span><br><span class="line">Updated by Connor Tumbleson &lt;connor.tumbleson@gmail.com&gt;</span><br><span class="line"></span><br><span class="line">usage: apktool</span><br><span class="line">-advance,--advanced   prints advance information.</span><br><span class="line">-version,--version    prints the version then exits</span><br><span class="line">usage: apktool if|install-framework [options] &lt;framework.apk&gt;</span><br><span class="line">-p,--frame-path &lt;dir&gt;   Stores framework files into &lt;dir&gt;.</span><br><span class="line">-t,--tag &lt;tag&gt;          Tag frameworks using &lt;tag&gt;.</span><br><span class="line">usage: apktool d[ecode] [options] &lt;file_apk&gt;</span><br><span class="line">-f,--force              Force delete destination directory.</span><br><span class="line">-o,--output &lt;dir&gt;       The name of folder that gets written. Default is apk.out</span><br><span class="line">-p,--frame-path &lt;dir&gt;   Uses framework files located in &lt;dir&gt;.</span><br><span class="line">-r,--no-res             Do not decode resources.</span><br><span class="line">-s,--no-src             Do not decode sources.</span><br><span class="line">-t,--frame-tag &lt;tag&gt;    Uses framework files tagged by &lt;tag&gt;.</span><br><span class="line">usage: apktool b[uild] [options] &lt;app_path&gt;</span><br><span class="line">-f,--force-all          Skip changes detection and build all files.</span><br><span class="line">-o,--output &lt;dir&gt;       The name of apk that gets written. Default is dist/name.apk</span><br><span class="line">-p,--frame-path &lt;dir&gt;   Uses framework files located in &lt;dir&gt;.</span><br><span class="line"></span><br><span class="line">For additional info, see: http://ibotpeaches.github.io/Apktool/</span><br><span class="line">For smali/baksmali info, see: https://github.com/JesusFreke/smali</span><br></pre></td></tr></table></figure>
 <p>使用示例：</p>
-<p>如果以来平台和设备需要设置framework环境  </p>
+<p>如果依赖平台和设备需要设置framework环境  </p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$apktool if -p &lt;输出目录&gt; framework.apk</span><br></pre></td></tr></table></figure>
 <p>反编译  </p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$apktool d -p &lt;上述的framework的安装目录&gt; -o &lt;输出目录&gt; xxx.apk</span><br></pre></td></tr></table></figure>
@@ -497,7 +509,7 @@
           
   <div class="comments" id="comments">
     
-      <div id="uyan_frame"></div>
+      <div id="hypercomments_widget"></div>
     
   </div>
 
@@ -763,25 +775,31 @@
 
 	
 
+		<script type="text/javascript">
+		_hcwp = window._hcwp || [];
+
+		_hcwp.push({widget:"Bloggerstream", widget_id: 99458, selector:".hc-comment-count", label: "{\%COUNT%\}" });
+
+		
+		_hcwp.push({widget:"Stream", widget_id: 99458, xid: "2017/12/26/2017-12-26-androiddecompile/"});
+		
+
+		(function() {
+		if("HC_LOAD_INIT" in window)return;
+		HC_LOAD_INIT = true;
+		var lang = (navigator.language || navigator.systemLanguage || navigator.userLanguage || "en").substr(0, 2).toLowerCase();
+		var hcc = document.createElement("script"); hcc.type = "text/javascript"; hcc.async = true;
+		hcc.src = ("https:" == document.location.protocol ? "https" : "http")+"://w.hypercomments.com/widget/hc/99458/"+lang+"/widget.js";
+		var s = document.getElementsByTagName("script")[0];
+		s.parentNode.insertBefore(hcc, s.nextSibling);
+		})();
+		</script>
+
+	
 
 
 
 
-  
-    
-
-    
-      <!-- UY BEGIN -->
-      <script type="text/javascript" src="http://v2.uyan.cc/code/uyan.js?uid=2145075"></script>
-      <!-- UY END -->
-    
-  
-
-
-
-
-
-  
 
 
 

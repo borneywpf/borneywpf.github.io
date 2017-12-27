@@ -53,7 +53,7 @@
 <link href="/css/main.css?v=5.1.2" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="android,toast,原理剖析," />
+  <meta name="keywords" content="android,原理剖析,toast," />
 
 
 
@@ -70,7 +70,7 @@
 
 
 <meta name="description" content="Toast 对大家来说是一个熟悉的不能再熟悉的东西了，但是究竟什么是Toast,Toast的原理是什么，可能就会有一部分人不知道了，今天我们就来细致的剖析下这个Toast,做到知其然并知其所以然 什么是Toast借鉴官方的表述：  A toast is a view containing a quick little ">
-<meta name="keywords" content="android,toast,原理剖析">
+<meta name="keywords" content="android,原理剖析,toast">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Toast 原理剖析">
 <meta property="og:url" content="http://thinkdevos.net/2017/10/13/2017-10-13-toast/index.html">
@@ -97,7 +97,7 @@
     tabs: true,
     motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn"}},
     duoshuo: {
-      userId: '0',
+      userId: 'undefined',
       author: '博主'
     },
     algolia: {
@@ -320,6 +320,18 @@
 
           
             
+            <!--noindex-->
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2017/10/13/2017-10-13-toast/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count hc-comment-count" data-xid="2017/10/13/2017-10-13-toast/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+              <!--/noindex-->
+            
           
 
           
@@ -426,9 +438,9 @@
           
             <a href="/tags/android/" rel="tag"># android</a>
           
-            <a href="/tags/toast/" rel="tag"># toast</a>
-          
             <a href="/tags/原理剖析/" rel="tag"># 原理剖析</a>
+          
+            <a href="/tags/toast/" rel="tag"># toast</a>
           
         </div>
       
@@ -483,7 +495,7 @@
           
   <div class="comments" id="comments">
     
-      <div id="uyan_frame"></div>
+      <div id="hypercomments_widget"></div>
     
   </div>
 
@@ -749,25 +761,31 @@
 
 	
 
+		<script type="text/javascript">
+		_hcwp = window._hcwp || [];
+
+		_hcwp.push({widget:"Bloggerstream", widget_id: 99458, selector:".hc-comment-count", label: "{\%COUNT%\}" });
+
+		
+		_hcwp.push({widget:"Stream", widget_id: 99458, xid: "2017/10/13/2017-10-13-toast/"});
+		
+
+		(function() {
+		if("HC_LOAD_INIT" in window)return;
+		HC_LOAD_INIT = true;
+		var lang = (navigator.language || navigator.systemLanguage || navigator.userLanguage || "en").substr(0, 2).toLowerCase();
+		var hcc = document.createElement("script"); hcc.type = "text/javascript"; hcc.async = true;
+		hcc.src = ("https:" == document.location.protocol ? "https" : "http")+"://w.hypercomments.com/widget/hc/99458/"+lang+"/widget.js";
+		var s = document.getElementsByTagName("script")[0];
+		s.parentNode.insertBefore(hcc, s.nextSibling);
+		})();
+		</script>
+
+	
 
 
 
 
-  
-    
-
-    
-      <!-- UY BEGIN -->
-      <script type="text/javascript" src="http://v2.uyan.cc/code/uyan.js?uid=2145075"></script>
-      <!-- UY END -->
-    
-  
-
-
-
-
-
-  
 
 
 

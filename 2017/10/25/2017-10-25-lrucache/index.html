@@ -53,7 +53,7 @@
 <link href="/css/main.css?v=5.1.2" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="android,原理剖析,LruCache," />
+  <meta name="keywords" content="android,LruCache,原理剖析," />
 
 
 
@@ -70,7 +70,7 @@
 
 
 <meta name="description" content="LruCache这个类在我们现在应用的开发中已经被普遍使用了，今天我们就深度解析这个类，从原理上掌握作者的设计思想以及实现原理 什么是LruCache借官方的描述，LruCache就是一个持有一定数量强引用数据的缓存。当访问一个数据时，这个数据就会被移动到数据队列的头部(经常用到的数据)，当数据添加到缓存满时，队列尾部">
-<meta name="keywords" content="android,原理剖析,LruCache">
+<meta name="keywords" content="android,LruCache,原理剖析">
 <meta property="og:type" content="article">
 <meta property="og:title" content="LruCache原理分析">
 <meta property="og:url" content="http://thinkdevos.net/2017/10/25/2017-10-25-lrucache/index.html">
@@ -95,7 +95,7 @@
     tabs: true,
     motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn"}},
     duoshuo: {
-      userId: '0',
+      userId: 'undefined',
       author: '博主'
     },
     algolia: {
@@ -318,6 +318,18 @@
 
           
             
+            <!--noindex-->
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2017/10/25/2017-10-25-lrucache/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count hc-comment-count" data-xid="2017/10/25/2017-10-25-lrucache/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+              <!--/noindex-->
+            
           
 
           
@@ -415,9 +427,9 @@
           
             <a href="/tags/android/" rel="tag"># android</a>
           
-            <a href="/tags/原理剖析/" rel="tag"># 原理剖析</a>
-          
             <a href="/tags/LruCache/" rel="tag"># LruCache</a>
+          
+            <a href="/tags/原理剖析/" rel="tag"># 原理剖析</a>
           
         </div>
       
@@ -472,7 +484,7 @@
           
   <div class="comments" id="comments">
     
-      <div id="uyan_frame"></div>
+      <div id="hypercomments_widget"></div>
     
   </div>
 
@@ -738,25 +750,31 @@
 
 	
 
+		<script type="text/javascript">
+		_hcwp = window._hcwp || [];
+
+		_hcwp.push({widget:"Bloggerstream", widget_id: 99458, selector:".hc-comment-count", label: "{\%COUNT%\}" });
+
+		
+		_hcwp.push({widget:"Stream", widget_id: 99458, xid: "2017/10/25/2017-10-25-lrucache/"});
+		
+
+		(function() {
+		if("HC_LOAD_INIT" in window)return;
+		HC_LOAD_INIT = true;
+		var lang = (navigator.language || navigator.systemLanguage || navigator.userLanguage || "en").substr(0, 2).toLowerCase();
+		var hcc = document.createElement("script"); hcc.type = "text/javascript"; hcc.async = true;
+		hcc.src = ("https:" == document.location.protocol ? "https" : "http")+"://w.hypercomments.com/widget/hc/99458/"+lang+"/widget.js";
+		var s = document.getElementsByTagName("script")[0];
+		s.parentNode.insertBefore(hcc, s.nextSibling);
+		})();
+		</script>
+
+	
 
 
 
 
-  
-    
-
-    
-      <!-- UY BEGIN -->
-      <script type="text/javascript" src="http://v2.uyan.cc/code/uyan.js?uid=2145075"></script>
-      <!-- UY END -->
-    
-  
-
-
-
-
-
-  
 
 
 
