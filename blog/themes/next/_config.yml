@@ -332,7 +332,7 @@ disqus:
   count: true
 
 # Hypercomments
-#hypercomments_id:
+hypercomments_id: 99458
 
 # changyan
 changyan:
@@ -354,7 +354,7 @@ valine:
 
 # Support for youyan comments system.
 # You can get your uid from http://www.uyan.cc
-youyan_uid: 2145075
+#youyan_uid: 2145075
 
 # Support for LiveRe comments system.
 # You can get your uid from https://livere.com/insight/myCode (General web site)
@@ -371,8 +371,9 @@ youyan_uid: 2145075
 # This plugin is more useful in China, make sure you known how to use it.
 # And you can find the use guide at official webiste: http://www.jiathis.com/.
 # Warning: JiaThis does not support https.
+
 #jiathis:
-  ##uid: Get this uid from http://www.jiathis.com/
+#  ##uid: Get this uid from http://www.jiathis.com/
 #add_this_id:
 
 # Share
@@ -403,11 +404,12 @@ youyan_uid: 2145075
 # Make duoshuo show UA
 # user_id must NOT be null when admin_enable is true!
 # you can visit http://dev.duoshuo.com get duoshuo user id.
-duoshuo_info:
-  ua_enable: true
-  admin_enable: false
-  user_id: 0
-  #admin_nickname: Author
+
+#duoshuo_info:
+#  ua_enable: false
+#  admin_enable: false
+#  user_id: 0
+#  #admin_nickname: Author
 
 
 

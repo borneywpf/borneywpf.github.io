@@ -57,7 +57,7 @@ tags:
 
   使用示例：
 
-  如果以来平台和设备需要设置framework环境  
+  如果依赖平台和设备需要设置framework环境  
 
   ```
   $apktool if -p <输出目录> framework.apk
